@@ -134,6 +134,9 @@ export interface ProxyData {
   trafficDown: number;
   connectedIps: string[];
   maxConnections?: number;
+  listenPort?: number;
+  vpnSubscription?: string;
+  vpnContainerName?: string;
 }
 
 export interface ProxyStatsData {
@@ -158,6 +161,8 @@ export interface CreateProxyRequest {
   name?: string;
   note?: string;
   maxConnections?: number;
+  listenPort?: number;
+  vpnSubscription?: string;
 }
 
 export interface StatsSnapshotData {
@@ -192,7 +197,7 @@ export async function createProxy(nodeId: number, data: CreateProxyRequest) {
   });
 }
 
-export async function updateProxy(nodeId: number, proxyId: string, data: { domain?: string; tag?: string; name?: string; note?: string; maxConnections?: number }) {
+export async function updateProxy(nodeId: number, proxyId: string, data: { domain?: string; tag?: string; name?: string; note?: string; maxConnections?: number; vpnSubscription?: string }) {
   return request<ProxyData>(`/nodes/${nodeId}/proxies/${proxyId}`, {
     method: 'PUT',
     body: JSON.stringify(data),

@@ -16,6 +16,7 @@ export default function EditProxyDialog({ open, onClose, nodeId, proxy, onUpdate
   const [domain, setDomain] = useState(proxy.domain);
   const [tag, setTag] = useState(proxy.tag || '');
   const [maxConnections, setMaxConnections] = useState(proxy.maxConnections ? proxy.maxConnections.toString() : '');
+  const [vpnSubscription, setVpnSubscription] = useState(proxy.vpnSubscription || '');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -31,6 +32,7 @@ export default function EditProxyDialog({ open, onClose, nodeId, proxy, onUpdate
         domain: domain !== proxy.domain ? domain : undefined,
         tag: tag !== (proxy.tag || '') ? tag : undefined,
         maxConnections: parseInt(maxConnections, 10) || 0,
+        vpnSubscription: vpnSubscription !== (proxy.vpnSubscription || '') ? vpnSubscription : undefined,
       });
       onUpdated();
     } catch (err: any) {
@@ -69,6 +71,10 @@ export default function EditProxyDialog({ open, onClose, nodeId, proxy, onUpdate
           <div className="dialog-field">
             <label>Лимит подключений (0 = без лимита)</label>
             <TextInput value={maxConnections} onUpdate={setMaxConnections} placeholder="0" size="l" type="number" />
+          </div>
+          <div className="dialog-field">
+            <label>VPN подписка — VLESS URL (оставьте пустым для отключения)</label>
+            <TextInput value={vpnSubscription} onUpdate={setVpnSubscription} placeholder="https://..." size="l" />
           </div>
         </form>
       </Dialog.Body>

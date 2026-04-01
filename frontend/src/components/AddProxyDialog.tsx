@@ -17,6 +17,8 @@ export default function AddProxyDialog({ open, onClose, nodeId, nodes, onCreated
   const [note, setNote] = useState('');
   const [tag, setTag] = useState('');
   const [maxConnections, setMaxConnections] = useState('');
+  const [listenPort, setListenPort] = useState('');
+  const [vpnSubscription, setVpnSubscription] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -39,12 +41,16 @@ export default function AddProxyDialog({ open, onClose, nodeId, nodes, onCreated
         name: name || undefined,
         note: note || undefined,
         maxConnections: maxConnections ? parseInt(maxConnections, 10) : undefined,
+        listenPort: listenPort ? parseInt(listenPort, 10) : undefined,
+        vpnSubscription: vpnSubscription || undefined,
       });
       setDomain('');
       setName('');
       setNote('');
       setTag('');
       setMaxConnections('');
+      setListenPort('');
+      setVpnSubscription('');
       setSelectedNodeId(nodeId ? nodeId.toString() : '');
       onCreated();
     } catch (err: any) {
@@ -95,6 +101,14 @@ export default function AddProxyDialog({ open, onClose, nodeId, nodes, onCreated
           <div className="dialog-field">
             <label>Лимит подключений (0 = без лимита)</label>
             <TextInput value={maxConnections} onUpdate={setMaxConnections} placeholder="0" size="l" type="number" />
+          </div>
+          <div className="dialog-field">
+            <label>Собственный порт прослушивания (пусто = SNI на 443)</label>
+            <TextInput value={listenPort} onUpdate={setListenPort} placeholder="напр. 8443" size="l" type="number" />
+          </div>
+          <div className="dialog-field">
+            <label>VPN подписка — VLESS URL (необязательно)</label>
+            <TextInput value={vpnSubscription} onUpdate={setVpnSubscription} placeholder="https://..." size="l" />
           </div>
         </form>
       </Dialog.Body>
