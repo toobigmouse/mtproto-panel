@@ -43,7 +43,7 @@
 Одна команда для загрузки и запуска:
 
 ```bash
-wget -qO /tmp/panel-install.sh https://raw.githubusercontent.com/danielVNru/mtproto-panel/master/install.sh && sudo bash /tmp/panel-install.sh
+bash <(wget -qO- https://raw.githubusercontent.com/danielVNru/mtproto-panel/master/install.sh)
 ```
 
 Скрипт автоматически:

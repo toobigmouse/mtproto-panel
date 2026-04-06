@@ -162,7 +162,8 @@ chmod 600 .env
 
 # Setup SSL
 if [ "$SSL_OPTION" = "2" ] || [ "$SSL_OPTION" = "3" ]; then
-    PORT=80
+    # Use a high internal port so host port 80 is never bound (may be occupied by ISPManager etc.)
+    SSL_HTTP_PORT=18080
 
     # Create nginx SSL config
     cat > nginx-ssl.conf << 'NGINXEOF'
@@ -256,8 +257,8 @@ services:
       - ${KEY_PATH}:/etc/ssl/private/privkey.pem:ro
 EOF
 
-    # Update PORT in .env
-    sed -i "s/^PORT=.*/PORT=80/" .env
+    # Map an unused high port to HTTP inside container — host port 80 is NOT bound
+    sed -i "s/^PORT=.*/PORT=${SSL_HTTP_PORT}/" .env
 fi
 
 # Build and start
