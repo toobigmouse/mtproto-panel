@@ -216,9 +216,9 @@ NGINXEOF
     if [ "$SSL_OPTION" = "3" ]; then
         echo -e "${CYAN}Установка certbot...${NC}"
         if command -v apt-get &> /dev/null; then
-            apt-get update -qq && apt-get install -y -qq certbot python3-certbot-nginx
+            apt-get update -qq && apt-get install -y -qq certbot
         elif command -v yum &> /dev/null; then
-            yum install -y -q certbot python3-certbot-nginx
+            yum install -y -q certbot
         fi
 
         if ! command -v certbot &> /dev/null; then
@@ -227,16 +227,33 @@ NGINXEOF
         fi
 
         echo -e "${CYAN}Получение сертификата Let's Encrypt для ${SSL_DOMAIN}...${NC}"
+        echo -e "${YELLOW}Останавливаю сервисы, занимающие порты 80 и 443...${NC}"
 
-        # Use --nginx authenticator: serves the challenge through the running nginx,
-        # no need to stop it (ISPManager watchdog will not interfere)
-        certbot certonly --nginx -d "$SSL_DOMAIN" \
+        # Stop docker if running (frees ports 443 and 80)
+        if docker compose ps 2>/dev/null | grep -q "Up"; then
+            docker compose down 2>/dev/null || true
+        fi
+
+        # Stop web servers holding port 80
+        STOPPED_SERVICES=()
+        for svc in nginx apache2 httpd lighttpd caddy; do
+            if systemctl is-active --quiet "$svc" 2>/dev/null; then
+                systemctl stop "$svc" && STOPPED_SERVICES+=("$svc")
+            fi
+        done
+
+        certbot certonly --standalone -d "$SSL_DOMAIN" \
             --agree-tos --non-interactive --register-unsafely-without-email
         CERTBOT_EXIT=$?
 
+        # Restore stopped services
+        for svc in "${STOPPED_SERVICES[@]}"; do
+            systemctl start "$svc" 2>/dev/null || true
+        done
+
         if [ $CERTBOT_EXIT -ne 0 ]; then
             echo -e "${RED}Ошибка получения сертификата Let's Encrypt.${NC}"
-            echo -e "${YELLOW}Попробуйте вручную: certbot certonly --nginx -d ${SSL_DOMAIN}${NC}"
+            echo -e "${YELLOW}Попробуйте вручную: certbot certonly --standalone -d ${SSL_DOMAIN}${NC}"
             exit 1
         fi
 
