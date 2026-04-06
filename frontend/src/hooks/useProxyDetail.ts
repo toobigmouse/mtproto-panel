@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams } from 'react-router-dom';
+import { copyToClipboard } from '../utils/clipboard';
 import {
   getNode,
   getProxyStats,
@@ -100,7 +101,7 @@ export function useProxyDetail() {
     if (!proxyId) return;
     try {
       const link = await getProxyLink(nodeId, proxyId);
-      await navigator.clipboard.writeText(link);
+      await copyToClipboard(link);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err: any) {

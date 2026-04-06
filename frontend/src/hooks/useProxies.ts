@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { copyToClipboard } from '../utils/clipboard';
 import {
   getAllProxies,
   getNodes,
@@ -58,7 +59,7 @@ export function useProxies() {
   const handleCopyLink = async (nodeId: number, proxyId: string) => {
     try {
       const link = await getProxyLink(nodeId, proxyId);
-      await navigator.clipboard.writeText(link);
+      await copyToClipboard(link);
       setCopiedId(proxyId);
       setTimeout(() => setCopiedId(null), 2000);
     } catch (err: any) {
