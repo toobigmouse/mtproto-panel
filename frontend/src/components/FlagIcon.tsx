@@ -3,16 +3,15 @@ interface FlagIconProps {
   size?: number;
 }
 
+function countryCodeToEmoji(code: string): string {
+  return [...code.toUpperCase()].map((c) => String.fromCodePoint(0x1f1e6 + c.charCodeAt(0) - 65)).join('');
+}
+
 export default function FlagIcon({ code, size = 20 }: FlagIconProps) {
   if (!code || code.length !== 2) return null;
-  const h = Math.round(size * 0.75);
   return (
-    <img
-      src={`https://flagcdn.com/${size}x${h}/${code.toLowerCase()}.png`}
-      alt={code}
-      style={{ verticalAlign: 'middle', marginRight: 3 }}
-      width={size}
-      height={h}
-    />
+    <span style={{ fontSize: size * 0.8, verticalAlign: 'middle', marginRight: 3 }}>
+      {countryCodeToEmoji(code)}
+    </span>
   );
 }

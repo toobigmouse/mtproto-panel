@@ -3,6 +3,26 @@ import { StatsSnapshotData } from '../api';
 
 const toPoint = (s: StatsSnapshotData, value: number) => ({ x: new Date(s.timestamp), y: value });
 
+const SEVENTY_TWO_HOURS = 72 * 60 * 60 * 1000;
+
+function filterLast72h(data: StatsSnapshotData[]): StatsSnapshotData[] {
+  const cutoff = Date.now() - SEVENTY_TWO_HOURS;
+  return data.filter((s) => new Date(s.timestamp).getTime() >= cutoff);
+}
+
+function computeDeltas(
+  data: StatsSnapshotData[],
+  field: 'networkRxBytes' | 'networkTxBytes',
+): { x: Date; y: number }[] {
+  if (data.length === 0) return [];
+  const result: { x: Date; y: number }[] = [{ x: new Date(data[0].timestamp), y: 0 }];
+  for (let i = 1; i < data.length; i++) {
+    const delta = data[i][field] - data[i - 1][field];
+    result.push({ x: new Date(data[i].timestamp), y: +(Math.max(0, delta) / 1048576).toFixed(2) });
+  }
+  return result;
+}
+
 export function buildChartOptions() {
   return {
     responsive: true,
@@ -48,11 +68,13 @@ export function buildChartOptions() {
 }
 
 export function buildChartData(statsHistory: StatsSnapshotData[]) {
+  const data = filterLast72h(statsHistory);
+
   return {
     datasets: [
       {
         label: 'Подключения',
-        data: statsHistory.map((s) => toPoint(s, s.connectedCount)),
+        data: data.map((s) => toPoint(s, s.connectedCount)),
         yAxisID: 'y',
         borderColor: 'rgb(75, 192, 192)',
         backgroundColor: 'rgba(75, 192, 192, 0.1)',
@@ -62,7 +84,7 @@ export function buildChartData(statsHistory: StatsSnapshotData[]) {
       },
       {
         label: 'CPU %',
-        data: statsHistory.map((s) => toPoint(s, s.cpuPercent)),
+        data: data.map((s) => toPoint(s, s.cpuPercent)),
         yAxisID: 'y',
         borderColor: 'rgb(255, 159, 64)',
         fill: false,
@@ -70,8 +92,8 @@ export function buildChartData(statsHistory: StatsSnapshotData[]) {
         tension: 0.3,
       },
       {
-        label: 'Вход (MB)',
-        data: statsHistory.map((s) => toPoint(s, +(s.networkRxBytes / 1048576).toFixed(2))),
+        label: 'Δ Вход (MB)',
+        data: computeDeltas(data, 'networkRxBytes'),
         yAxisID: 'y1',
         borderColor: 'rgb(54, 162, 235)',
         backgroundColor: 'rgba(54, 162, 235, 0.1)',
@@ -80,8 +102,8 @@ export function buildChartData(statsHistory: StatsSnapshotData[]) {
         tension: 0.3,
       },
       {
-        label: 'Исход (MB)',
-        data: statsHistory.map((s) => toPoint(s, +(s.networkTxBytes / 1048576).toFixed(2))),
+        label: 'Δ Исход (MB)',
+        data: computeDeltas(data, 'networkTxBytes'),
         yAxisID: 'y1',
         borderColor: 'rgb(255, 99, 132)',
         fill: false,
@@ -90,7 +112,7 @@ export function buildChartData(statsHistory: StatsSnapshotData[]) {
       },
       {
         label: 'Память (MB)',
-        data: statsHistory.map((s) => toPoint(s, +(s.memoryBytes / 1048576).toFixed(2))),
+        data: data.map((s) => toPoint(s, +(s.memoryBytes / 1048576).toFixed(2))),
         yAxisID: 'y1',
         borderColor: 'rgb(153, 102, 255)',
         fill: false,
