@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Card, TextInput, Button, Alert, Label } from '@gravity-ui/uikit';
-import { getMe } from '../api';
+import { Card, TextInput, Label } from '@gravity-ui/uikit';
+import { getMe } from '../../api';
+import s from './Settings.module.scss';
 
 export default function Settings() {
   const [username, setUsername] = useState('');
@@ -15,15 +16,15 @@ export default function Settings() {
 
   return (
     <>
-      <h2 style={{ margin: '0 0 24px 0' }}>Настройки</h2>
+      <h2 className={s.title}>Настройки</h2>
 
-      <Card view="outlined" style={{ padding: 24, maxWidth: 500 }}>
-        <h3 style={{ margin: '0 0 16px 0' }}>Аккаунт</h3>
-        <div className="dialog-field">
+      <Card view="outlined" className={s.card}>
+        <h3>Аккаунт</h3>
+        <div className={s.field}>
           <label>Имя пользователя</label>
           <TextInput value={username} size="l" disabled />
         </div>
-        <div style={{ marginTop: 8 }}>
+        <div className={s.hint}>
           <Label theme="info" size="xs">
             Для смены пароля обновите переменную ADMIN_PASSWORD и перезапустите бэкенд.
           </Label>
