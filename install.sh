@@ -272,7 +272,7 @@ version: "3.8"
 services:
   frontend:
     ports:
-      - "443:443"
+      - "${PORT}:443"
     volumes:
       - ./nginx-ssl.conf:/etc/nginx/conf.d/default.conf:ro
       - ${CERT_PATH}:/etc/ssl/certs/fullchain.pem:ro
@@ -296,7 +296,11 @@ SERVER_IP=$(hostname -I 2>/dev/null | awk '{print $1}')
 SERVER_IP=${SERVER_IP:-"0.0.0.0"}
 
 if [ "$SSL_OPTION" = "2" ] || [ "$SSL_OPTION" = "3" ]; then
-    PANEL_URL="https://${SSL_DOMAIN:-${SERVER_IP}}"
+    if [ "$PORT" = "443" ]; then
+        PANEL_URL="https://${SSL_DOMAIN:-${SERVER_IP}}"
+    else
+        PANEL_URL="https://${SSL_DOMAIN:-${SERVER_IP}}:${PORT}"
+    fi
 else
     if [ "$PORT" = "80" ]; then
         PANEL_URL="http://${SERVER_IP}"
