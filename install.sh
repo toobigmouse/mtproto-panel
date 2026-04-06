@@ -228,24 +228,30 @@ NGINXEOF
 
         echo -e "${CYAN}Получение сертификата Let's Encrypt для ${SSL_DOMAIN}...${NC}"
 
-        # If port 80 is occupied (e.g. ISPManager nginx), stop it temporarily
-        NGINX_WAS_RUNNING=false
-        if ss -tlnp 2>/dev/null | grep -q ':80 ' || netstat -tlnp 2>/dev/null | grep -q ':80 '; then
-            echo -e "${YELLOW}Порт 80 занят. Временно останавливаю nginx для получения сертификата...${NC}"
-            if systemctl is-active --quiet nginx 2>/dev/null; then
-                systemctl stop nginx
-                NGINX_WAS_RUNNING=true
+        # Stop every known web service occupying port 80
+        STOPPED_SERVICES=()
+        for svc in nginx apache2 httpd lighttpd caddy; do
+            if systemctl is-active --quiet "$svc" 2>/dev/null; then
+                echo -e "${YELLOW}Останавливаю ${svc}...${NC}"
+                systemctl stop "$svc" && STOPPED_SERVICES+=("$svc")
             fi
+        done
+        # If port 80 is still in use, force-kill the holder
+        if ss -tlnp 2>/dev/null | grep -q ':80 ' || fuser 80/tcp &>/dev/null; then
+            echo -e "${YELLOW}Принудительно освобождаю порт 80...${NC}"
+            fuser -k 80/tcp 2>/dev/null || true
+            sleep 1
         fi
 
         certbot certonly --standalone -d "$SSL_DOMAIN" \
             --agree-tos --non-interactive --register-unsafely-without-email
         CERTBOT_EXIT=$?
 
-        if $NGINX_WAS_RUNNING; then
-            systemctl start nginx
-            echo -e "${GREEN}nginx перезапущен.${NC}"
-        fi
+        # Restore all stopped services
+        for svc in "${STOPPED_SERVICES[@]}"; do
+            echo -e "${YELLOW}Запускаю ${svc}...${NC}"
+            systemctl start "$svc" 2>/dev/null || true
+        done
 
         if [ $CERTBOT_EXIT -ne 0 ]; then
             echo -e "${RED}Ошибка получения сертификата Let's Encrypt.${NC}"
