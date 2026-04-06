@@ -1,41 +1,21 @@
-import { useState, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button, TextInput, Card, Alert } from '@gravity-ui/uikit';
-import { login } from '../api';
+import { useLogin } from '../../hooks/useLogin';
+import s from './Login.module.scss';
 
 export default function Login() {
-  const navigate = useNavigate();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      await login(username, password);
-      navigate('/nodes');
-    } catch (err: any) {
-      setError(err.message || 'Login failed');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { username, setUsername, password, setPassword, error, loading, handleSubmit } = useLogin();
 
   return (
-    <div className="login-container">
-      <Card className="login-card" view="outlined">
+    <div className={s.container}>
+      <Card className={s.card} view="outlined">
         <h2>MTProto Panel</h2>
         <form onSubmit={handleSubmit}>
           {error && (
-            <div style={{ marginBottom: 16 }}>
+            <div className={s.errorWrap}>
               <Alert theme="danger" message={error} />
             </div>
           )}
-          <div className="form-field">
+          <div className={s.field}>
             <label>Имя пользователя</label>
             <TextInput
               value={username}
@@ -45,7 +25,7 @@ export default function Login() {
               autoFocus
             />
           </div>
-          <div className="form-field">
+          <div className={s.field}>
             <label>Пароль</label>
             <TextInput
               value={password}
