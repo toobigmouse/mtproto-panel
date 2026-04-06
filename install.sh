@@ -216,9 +216,9 @@ NGINXEOF
     if [ "$SSL_OPTION" = "3" ]; then
         echo -e "${CYAN}Установка certbot...${NC}"
         if command -v apt-get &> /dev/null; then
-            apt-get update -qq && apt-get install -y -qq certbot
+            apt-get update -qq && apt-get install -y -qq certbot python3-certbot-nginx
         elif command -v yum &> /dev/null; then
-            yum install -y -q certbot
+            yum install -y -q certbot python3-certbot-nginx
         fi
 
         if ! command -v certbot &> /dev/null; then
@@ -228,33 +228,15 @@ NGINXEOF
 
         echo -e "${CYAN}Получение сертификата Let's Encrypt для ${SSL_DOMAIN}...${NC}"
 
-        # Stop every known web service occupying port 80
-        STOPPED_SERVICES=()
-        for svc in nginx apache2 httpd lighttpd caddy; do
-            if systemctl is-active --quiet "$svc" 2>/dev/null; then
-                echo -e "${YELLOW}Останавливаю ${svc}...${NC}"
-                systemctl stop "$svc" && STOPPED_SERVICES+=("$svc")
-            fi
-        done
-        # If port 80 is still in use, force-kill the holder
-        if ss -tlnp 2>/dev/null | grep -q ':80 ' || fuser 80/tcp &>/dev/null; then
-            echo -e "${YELLOW}Принудительно освобождаю порт 80...${NC}"
-            fuser -k 80/tcp 2>/dev/null || true
-            sleep 1
-        fi
-
-        certbot certonly --standalone -d "$SSL_DOMAIN" \
+        # Use --nginx authenticator: serves the challenge through the running nginx,
+        # no need to stop it (ISPManager watchdog will not interfere)
+        certbot certonly --nginx -d "$SSL_DOMAIN" \
             --agree-tos --non-interactive --register-unsafely-without-email
         CERTBOT_EXIT=$?
 
-        # Restore all stopped services
-        for svc in "${STOPPED_SERVICES[@]}"; do
-            echo -e "${YELLOW}Запускаю ${svc}...${NC}"
-            systemctl start "$svc" 2>/dev/null || true
-        done
-
         if [ $CERTBOT_EXIT -ne 0 ]; then
             echo -e "${RED}Ошибка получения сертификата Let's Encrypt.${NC}"
+            echo -e "${YELLOW}Попробуйте вручную: certbot certonly --nginx -d ${SSL_DOMAIN}${NC}"
             exit 1
         fi
 
