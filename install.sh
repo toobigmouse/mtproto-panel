@@ -134,7 +134,17 @@ fi
 
 # Generate secrets
 JWT_SECRET=$(openssl rand -hex 32)
-DB_PASSWORD=$(openssl rand -hex 16)
+
+# Reuse DB password from existing .env if volume already exists, otherwise generate new
+if [ -f ".env" ]; then
+    OLD_DB_PASSWORD=$(grep '^DB_PASSWORD=' .env | cut -d'=' -f2-)
+fi
+if [ -n "$OLD_DB_PASSWORD" ]; then
+    DB_PASSWORD="$OLD_DB_PASSWORD"
+    echo -e "${YELLOW}Используется существующий пароль БД из .env${NC}"
+else
+    DB_PASSWORD=$(openssl rand -hex 16)
+fi
 
 echo ""
 echo -e "${GREEN}Конфигурация:${NC}"
