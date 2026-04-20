@@ -136,8 +136,12 @@ fi
 JWT_SECRET=$(openssl rand -hex 32)
 
 # Reuse DB password from existing .env if volume already exists, otherwise generate new
+OLD_DB_PASSWORD=""
 if [ -f ".env" ]; then
     OLD_DB_PASSWORD=$(grep '^DB_PASSWORD=' .env | cut -d'=' -f2-)
+elif [ -f "$INSTALL_DIR/.env" ]; then
+    # Legacy: old versions stored .env in repo root
+    OLD_DB_PASSWORD=$(grep '^DB_PASSWORD=' "$INSTALL_DIR/.env" | cut -d'=' -f2-)
 fi
 if [ -n "$OLD_DB_PASSWORD" ]; then
     DB_PASSWORD="$OLD_DB_PASSWORD"
@@ -169,6 +173,18 @@ DB_PASSWORD=${DB_PASSWORD}
 EOF
 
 chmod 600 .env
+
+# Cleanup legacy files from repo root (old versions stored them there)
+for f in ".env" "nginx-ssl.conf" "docker-compose.override.yml"; do
+    [ -f "$INSTALL_DIR/$f" ] && rm -f "$INSTALL_DIR/$f"
+done
+[ -d "$INSTALL_DIR/ssl" ] && rm -rf "$INSTALL_DIR/ssl"
+
+# Remove orphaned volume from old project name (install used to run from repo root)
+if docker volume inspect mtproto-panel_pgdata &>/dev/null; then
+    echo -e "${YELLOW}Удаляю устаревший Docker-том mtproto-panel_pgdata...${NC}"
+    docker volume rm mtproto-panel_pgdata 2>/dev/null || true
+fi
 
 # Setup SSL
 if [ "$SSL_OPTION" = "2" ] || [ "$SSL_OPTION" = "3" ]; then
@@ -295,6 +311,15 @@ fi
 
 # Build and start
 echo -e "${CYAN}Сборка и запуск панели...${NC}"
+# Remove mtproto-net if it exists without proper compose labels (created bare by service-node)
+if docker network inspect mtproto-net &>/dev/null; then
+    LABELS=$(docker network inspect mtproto-net --format '{{json .Labels}}')
+    if echo "$LABELS" | grep -q '"com.docker.compose.network"'; then
+        : # created by compose, leave it
+    else
+        docker network rm mtproto-net 2>/dev/null || true
+    fi
+fi
 docker compose up -d --build
 
 if [ $? -ne 0 ]; then

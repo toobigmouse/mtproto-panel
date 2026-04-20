@@ -1,6 +1,7 @@
 import { useState, FormEvent } from 'react';
-import { Dialog, TextInput, Alert } from '@gravity-ui/uikit';
+import { Dialog, TextInput, Alert, Button } from '@gravity-ui/uikit';
 import { updateProxy, ProxyData } from '../api';
+import { copyToClipboard } from '../utils/clipboard';
 
 interface Props {
   open: boolean;
@@ -19,6 +20,13 @@ export default function EditProxyDialog({ open, onClose, nodeId, proxy, onUpdate
   const [vpnSubscription, setVpnSubscription] = useState(proxy.vpnSubscription || '');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [secretCopied, setSecretCopied] = useState(false);
+
+  const handleCopySecret = async () => {
+    await copyToClipboard(proxy.secret);
+    setSecretCopied(true);
+    setTimeout(() => setSecretCopied(false), 2000);
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -59,6 +67,15 @@ export default function EditProxyDialog({ open, onClose, nodeId, proxy, onUpdate
           <div className="dialog-field">
             <label>Заметка</label>
             <TextInput value={note} onUpdate={setNote} placeholder="Описание" size="l" />
+          </div>
+          <div className="dialog-field">
+            <label>Секрет</label>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <TextInput value={proxy.secret} size="l" disabled style={{ flex: 1 }} />
+              <Button view="outlined" size="l" onClick={handleCopySecret}>
+                {secretCopied ? 'Скопировано' : 'Копировать'}
+              </Button>
+            </div>
           </div>
           <div className="dialog-field">
             <label>Fake TLS домен</label>
