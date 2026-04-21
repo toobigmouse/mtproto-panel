@@ -80,7 +80,7 @@ export default function ProxyCard({ proxy, nodeId, nodeName, copied, onEdit, onD
       )}
       <div className={s.field}>
         <span className={s.label}>Порт</span>
-        <span>{proxy.listenPort || 443}</span>
+        <span>{proxy.listenPort || proxy.port}</span>
       </div>
       <div className={s.field}>
         <span className={s.label}>Домен</span>
