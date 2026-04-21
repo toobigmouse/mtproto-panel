@@ -12,6 +12,14 @@ echo -e "${CYAN}  MTProto Panel - Обновление            ${NC}"
 echo -e "${CYAN}========================================${NC}"
 echo ""
 
+# Парсим аргументы
+FORCE_BRANCH=""
+for arg in "$@"; do
+    case "$arg" in
+        --b=*) FORCE_BRANCH="${arg#--b=}" ;;
+    esac
+done
+
 # Проверяем права root
 if [ "$EUID" -ne 0 ]; then
     echo -e "${RED}Ошибка: запустите скрипт с правами root (sudo bash update.sh).${NC}"
@@ -47,9 +55,13 @@ cd "$GIT_ROOT"
 # Сохраняем локальные изменения если есть (.env, data/)
 git stash --include-untracked 2>/dev/null || true
 
-# Определяем основную ветку
-BRANCH=$(git remote show origin 2>/dev/null | grep 'HEAD branch' | awk '{print $NF}')
-BRANCH=${BRANCH:-master}
+# Определяем ветку (из аргумента или автоматически)
+if [ -n "$FORCE_BRANCH" ]; then
+    BRANCH="$FORCE_BRANCH"
+else
+    BRANCH=$(git remote show origin 2>/dev/null | grep 'HEAD branch' | awk '{print $NF}')
+    BRANCH=${BRANCH:-master}
+fi
 echo -e "  Ветка: ${YELLOW}${BRANCH}${NC}"
 
 git pull origin "$BRANCH"
