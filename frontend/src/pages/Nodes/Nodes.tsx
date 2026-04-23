@@ -55,6 +55,7 @@ export default function Nodes() {
               </div>
 
               <div className="proxy-card-field"><span className="label">IP</span><span>{node.ip}</span></div>
+              {node.domain && <div className="proxy-card-field"><span className="label">Домен</span><span>{node.domain}</span></div>}
               <div className="proxy-card-field"><span className="label">Порт</span><span>{node.port}</span></div>
               <div className="proxy-card-field"><span className="label">Добавлено</span><span>{new Date(node.created_at).toLocaleDateString()}</span></div>
 

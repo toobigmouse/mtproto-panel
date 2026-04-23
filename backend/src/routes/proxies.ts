@@ -133,7 +133,8 @@ router.get('/:nodeId/proxies/:proxyId/link', async (req: AuthRequest, res: Respo
       res.status(404).json({ error: 'Node not found' });
       return;
     }
-    const result = await proxyToNode(node, 'GET', `/${req.params.proxyId}/link?server_ip=${node.ip}`);
+    const serverHost = node.domain || node.ip;
+    const result = await proxyToNode(node, 'GET', `/${req.params.proxyId}/link?server_ip=${serverHost}`);
     res.status(result.status).json(result.data);
   } catch (error: any) {
     res.status(502).json({ error: `Failed to connect to node: ${error.message}` });
@@ -212,6 +213,64 @@ router.delete('/:nodeId/proxies/:proxyId/clear-history', async (req: AuthRequest
     res.status(result.status).json(result.data);
   } catch (error: any) {
     res.status(502).json({ error: `Failed to connect to node: ${error.message}` });
+  }
+});
+
+// Export all proxies from a node
+router.get('/:nodeId/export', async (req: AuthRequest, res: Response) => {
+  try {
+    const node = await getNodeWithToken(req.params.nodeId);
+    if (!node) {
+      res.status(404).json({ error: 'Node not found' });
+      return;
+    }
+    const url = `http://${node.ip}:${node.port}/api/export`;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
+    try {
+      const resp = await fetch(url, {
+        headers: { Authorization: `Bearer ${node.token}` },
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+      const data = await resp.json();
+      res.status(resp.status).json(data);
+    } catch (err: any) {
+      clearTimeout(timeout);
+      res.status(502).json({ error: `Failed to connect to node: ${err.message}` });
+    }
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Import proxies to a node
+router.post('/:nodeId/import', async (req: AuthRequest, res: Response) => {
+  try {
+    const node = await getNodeWithToken(req.params.nodeId);
+    if (!node) {
+      res.status(404).json({ error: 'Node not found' });
+      return;
+    }
+    const url = `http://${node.ip}:${node.port}/api/import`;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 60000);
+    try {
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${node.token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(req.body),
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+      const data = await resp.json();
+      res.status(resp.status).json(data);
+    } catch (err: any) {
+      clearTimeout(timeout);
+      res.status(502).json({ error: `Failed to connect to node: ${err.message}` });
+    }
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
 });
 

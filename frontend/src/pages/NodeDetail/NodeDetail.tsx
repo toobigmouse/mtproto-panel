@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, Loader, Label, Alert, TextArea } from '@gravity-ui/uikit';
 import AddProxyDialog from '../../components/AddProxyDialog';
@@ -15,7 +16,10 @@ export default function NodeDetail() {
     domainsText, setDomainsText, domainsLoading, domainsSaving, domainsLoaded,
     blacklistText, setBlacklistText, blacklistLoading, blacklistSaving, blacklistLoaded,
     nodeGeo, loadData, handleDelete, handleCopyLink, handleSaveDomains, handleSaveBlacklist,
+    exportLoading, importLoading, importResult, handleExport, handleImport,
   } = useNodeDetail();
+
+  const importInputRef = useRef<HTMLInputElement>(null);
 
   if (loading) {
     return <div className={s.loader}><Loader size="l" /></div>;
@@ -92,6 +96,40 @@ export default function NodeDetail() {
                 <Button view="action" size="s" loading={blacklistSaving} onClick={handleSaveBlacklist} disabled={!blacklistLoaded}>Сохранить</Button>
               </div>
             </>
+          )}
+        </Card>
+      </div>
+
+      <div className={s.section}>
+        <h3>Перенос конфигурации</h3>
+        <Card view="outlined" className={s.sectionCard}>
+          <p className={s.sectionHint}>Экспортируйте все прокси ноды в файл, затем импортируйте на другой ноде для бесшовного переезда.</p>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+            <Button view="outlined" size="m" loading={exportLoading} onClick={handleExport}>
+              Экспортировать прокси
+            </Button>
+            <Button view="outlined" size="m" loading={importLoading} onClick={() => importInputRef.current?.click()}>
+              Импортировать прокси
+            </Button>
+            <input
+              ref={importInputRef}
+              type="file"
+              accept=".json"
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleImport(file);
+                e.target.value = '';
+              }}
+            />
+          </div>
+          {importResult && (
+            <div style={{ marginTop: 12 }}>
+              <Alert
+                theme={importResult.errors.length === 0 ? 'success' : 'warning'}
+                message={`Импортировано: ${importResult.imported}${importResult.errors.length > 0 ? `. Ошибки: ${importResult.errors.join('; ')}` : ''}`}
+              />
+            </div>
           )}
         </Card>
       </div>
