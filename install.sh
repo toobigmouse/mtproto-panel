@@ -174,8 +174,8 @@ EOF
 
 chmod 600 .env
 
-# Cleanup legacy files from repo root (old versions stored them there)
-for f in ".env" "nginx-ssl.conf" "docker-compose.override.yml"; do
+# Cleanup legacy generated files that must not be tracked by git
+for f in "nginx-ssl.conf" "docker-compose.override.yml"; do
     [ -f "$INSTALL_DIR/$f" ] && rm -f "$INSTALL_DIR/$f"
 done
 [ -d "$INSTALL_DIR/ssl" ] && rm -rf "$INSTALL_DIR/ssl"
