@@ -13,6 +13,7 @@ export default function AddNodeDialog({ open, onClose, onCreated }: Props) {
   const [ip, setIp] = useState('');
   const [port, setPort] = useState('8443');
   const [token, setToken] = useState('');
+  const [domain, setDomain] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -38,11 +39,13 @@ export default function AddNodeDialog({ open, onClose, onCreated }: Props) {
         ip,
         port: parseInt(port, 10),
         token,
+        domain: domain || undefined,
       });
       setName('');
       setIp('');
       setPort('8443');
       setToken('');
+      setDomain('');
       onCreated();
     } catch (err: any) {
       setError(err.message);
@@ -76,6 +79,10 @@ export default function AddNodeDialog({ open, onClose, onCreated }: Props) {
           <div className="dialog-field">
             <label>Токен доступа *</label>
             <TextInput value={token} onUpdate={setToken} placeholder="Токен из скрипта установки" size="l" />
+          </div>
+          <div className="dialog-field">
+            <label>Домен (необязательно — для ссылок вместо IP)</label>
+            <TextInput value={domain} onUpdate={setDomain} placeholder="proxy.example.com" size="l" />
           </div>
         </form>
       </Dialog.Body>

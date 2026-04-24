@@ -5,6 +5,11 @@ services:
     image: postgres:16-alpine
     container_name: mtproto-panel-db
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     environment:
       POSTGRES_DB: ${DB_NAME:-mtproto_panel}
       POSTGRES_USER: ${DB_USER:-mtproto}
@@ -21,6 +26,11 @@ services:
     build: ./backend
     container_name: mtproto-panel-backend
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     depends_on:
       db:
         condition: service_healthy
@@ -39,6 +49,11 @@ services:
     build: ./frontend
     container_name: mtproto-panel-frontend
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     ports:
       - "${PORT:-80}:80"
     depends_on:

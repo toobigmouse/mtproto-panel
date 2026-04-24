@@ -79,6 +79,10 @@ export default function ProxyCard({ proxy, nodeId, nodeName, copied, onEdit, onD
         </div>
       )}
       <div className={s.field}>
+        <span className={s.label}>Порт</span>
+        <span>{proxy.listenPort || proxy.nginxPort || proxy.port}</span>
+      </div>
+      <div className={s.field}>
         <span className={s.label}>Домен</span>
         <span>{proxy.domain}</span>
       </div>

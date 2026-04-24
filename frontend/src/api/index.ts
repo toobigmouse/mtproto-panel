@@ -65,6 +65,7 @@ export interface NodeData {
   ip: string;
   port: number;
   token?: string;
+  domain?: string;
   created_at: string;
   online?: boolean;
 }
@@ -77,18 +78,44 @@ export async function getNode(id: number): Promise<NodeData> {
   return request<NodeData>(`/nodes/${id}`);
 }
 
-export async function createNode(data: { name?: string; ip: string; port: number; token: string }) {
+export async function createNode(data: { name?: string; ip: string; port: number; token: string; domain?: string }) {
   return request<NodeData>('/nodes', {
     method: 'POST',
     body: JSON.stringify(data),
   });
 }
 
-export async function updateNode(id: number, data: { name?: string; ip?: string; port?: number; token?: string }) {
+export async function updateNode(id: number, data: { name?: string; ip?: string; port?: number; token?: string; domain?: string }) {
   return request<NodeData>(`/nodes/${id}`, {
     method: 'PUT',
     body: JSON.stringify(data),
   });
+}
+
+export async function exportNodeProxies(nodeId: number): Promise<Blob> {
+  const token = getToken();
+  const response = await fetch(`${API_BASE}/nodes/${nodeId}/export`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.error || 'Export failed');
+  }
+  return response.blob();
+}
+
+export async function importNodeProxies(nodeId: number, file: File): Promise<{ imported: number; errors: string[] }> {
+  const token = getToken();
+  const text = await file.text();
+  const bundle = JSON.parse(text);
+  const response = await fetch(`${API_BASE}/nodes/${nodeId}/import`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(bundle),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'Import failed');
+  return data;
 }
 
 export async function deleteNode(id: number) {
@@ -134,6 +161,7 @@ export interface ProxyData {
   trafficDown: number;
   connectedIps: string[];
   maxConnections?: number;
+  nginxPort?: number;
   listenPort?: number;
   vpnSubscription?: string;
   vpnContainerName?: string;

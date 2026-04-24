@@ -10,6 +10,8 @@ import {
   updateNodeDomains,
   getNodeBlacklist,
   updateNodeBlacklist,
+  exportNodeProxies,
+  importNodeProxies,
   NodeData,
   ProxyData,
 } from '../api';
@@ -34,6 +36,9 @@ export function useNodeDetail() {
   const [blacklistSaving, setBlacklistSaving] = useState(false);
   const [blacklistLoaded, setBlacklistLoaded] = useState(false);
   const [nodeGeo, setNodeGeo] = useState('');
+  const [exportLoading, setExportLoading] = useState(false);
+  const [importLoading, setImportLoading] = useState(false);
+  const [importResult, setImportResult] = useState<{ imported: number; errors: string[] } | null>(null);
 
   const loadData = useCallback(async () => {
     try {
@@ -120,11 +125,43 @@ export function useNodeDetail() {
     }
   };
 
+  const handleExport = async () => {
+    setExportLoading(true);
+    try {
+      const blob = await exportNodeProxies(nodeId);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `proxies-node-${nodeId}-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
+  const handleImport = async (file: File) => {
+    setImportLoading(true);
+    setImportResult(null);
+    try {
+      const result = await importNodeProxies(nodeId, file);
+      setImportResult(result);
+      if (result.imported > 0) await loadData();
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
   return {
     nodeId, node, proxies, loading, error, setError,
     showAdd, setShowAdd, editProxy, setEditProxy, copiedId,
     domainsText, setDomainsText, domainsLoading, domainsSaving, domainsLoaded,
     blacklistText, setBlacklistText, blacklistLoading, blacklistSaving, blacklistLoaded,
     nodeGeo, loadData, handleDelete, handleCopyLink, handleSaveDomains, handleSaveBlacklist,
+    exportLoading, importLoading, importResult, handleExport, handleImport,
   };
 }

@@ -20,8 +20,14 @@ export async function runMigrations(): Promise<void> {
         ip VARCHAR(255) NOT NULL,
         port INTEGER NOT NULL,
         token VARCHAR(255) NOT NULL,
+        domain VARCHAR(255) NOT NULL DEFAULT '',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+    `);
+
+    // Add domain column to existing nodes table (migration)
+    await client.query(`
+      ALTER TABLE nodes ADD COLUMN IF NOT EXISTS domain VARCHAR(255) NOT NULL DEFAULT '';
     `);
 
     console.log('Database migrations completed');

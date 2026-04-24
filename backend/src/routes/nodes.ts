@@ -9,7 +9,7 @@ router.use(authMiddleware);
 // List all nodes
 router.get('/', async (_req: AuthRequest, res: Response) => {
   try {
-    const result = await pool.query('SELECT id, name, ip, port, created_at FROM nodes ORDER BY created_at DESC');
+    const result = await pool.query('SELECT id, name, ip, port, domain, created_at FROM nodes ORDER BY created_at DESC');
     res.json(result.rows);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
@@ -40,7 +40,7 @@ router.post('/check-health', async (req: AuthRequest, res: Response) => {
 
 // Add a node
 router.post('/', async (req: AuthRequest, res: Response) => {
-  const { name, ip, port, token } = req.body;
+  const { name, ip, port, token, domain } = req.body;
 
   if (!ip || !port || !token) {
     res.status(400).json({ error: 'ip, port, and token are required' });
@@ -49,8 +49,8 @@ router.post('/', async (req: AuthRequest, res: Response) => {
 
   try {
     const result = await pool.query(
-      'INSERT INTO nodes (name, ip, port, token) VALUES ($1, $2, $3, $4) RETURNING id, name, ip, port, created_at',
-      [name || `Node ${ip}`, ip, port, token]
+      'INSERT INTO nodes (name, ip, port, token, domain) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, ip, port, domain, created_at',
+      [name || `Node ${ip}`, ip, port, token, domain || '']
     );
     res.status(201).json(result.rows[0]);
   } catch (error: any) {
@@ -61,7 +61,7 @@ router.post('/', async (req: AuthRequest, res: Response) => {
 // Get a node
 router.get('/:id', async (req: AuthRequest, res: Response) => {
   try {
-    const result = await pool.query('SELECT id, name, ip, port, token, created_at FROM nodes WHERE id = $1', [
+    const result = await pool.query('SELECT id, name, ip, port, token, domain, created_at FROM nodes WHERE id = $1', [
       req.params.id,
     ]);
     if (result.rows.length === 0) {
@@ -76,12 +76,12 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
 
 // Update node
 router.put('/:id', async (req: AuthRequest, res: Response) => {
-  const { name, ip, port, token } = req.body;
+  const { name, ip, port, token, domain } = req.body;
 
   try {
     const result = await pool.query(
-      'UPDATE nodes SET name = COALESCE($1, name), ip = COALESCE($2, ip), port = COALESCE($3, port), token = COALESCE($4, token) WHERE id = $5 RETURNING id, name, ip, port, created_at',
-      [name, ip, port, token, req.params.id]
+      'UPDATE nodes SET name = COALESCE($1, name), ip = COALESCE($2, ip), port = COALESCE($3, port), token = COALESCE($4, token), domain = COALESCE($5, domain) WHERE id = $6 RETURNING id, name, ip, port, domain, created_at',
+      [name, ip, port, token, domain, req.params.id]
     );
     if (result.rows.length === 0) {
       res.status(404).json({ error: 'Node not found' });
@@ -263,6 +263,66 @@ router.put('/:id/blacklist', async (req: AuthRequest, res: Response) => {
     try {
       const resp = await fetch(`http://${node.ip}:${node.port}/api/blacklist`, {
         method: 'PUT',
+        headers: { Authorization: `Bearer ${node.token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(req.body),
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+      const data = await resp.json();
+      res.status(resp.status).json(data);
+    } catch (err: any) {
+      clearTimeout(timeout);
+      res.status(502).json({ error: `Failed to connect to node: ${err.message}` });
+    }
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Export proxy configuration from node
+router.get('/:id/export', async (req: AuthRequest, res: Response) => {
+  try {
+    const result = await pool.query('SELECT ip, port, token FROM nodes WHERE id = $1', [req.params.id]);
+    if (result.rows.length === 0) {
+      res.status(404).json({ error: 'Node not found' });
+      return;
+    }
+    const node = result.rows[0];
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    try {
+      const resp = await fetch(`http://${node.ip}:${node.port}/api/export`, {
+        headers: { Authorization: `Bearer ${node.token}` },
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+      const data = await resp.json();
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', resp.headers.get('Content-Disposition') || 'attachment; filename="proxies-export.json"');
+      res.status(resp.status).json(data);
+    } catch (err: any) {
+      clearTimeout(timeout);
+      res.status(502).json({ error: `Failed to connect to node: ${err.message}` });
+    }
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Import proxy configuration to node
+router.post('/:id/import', async (req: AuthRequest, res: Response) => {
+  try {
+    const result = await pool.query('SELECT ip, port, token FROM nodes WHERE id = $1', [req.params.id]);
+    if (result.rows.length === 0) {
+      res.status(404).json({ error: 'Node not found' });
+      return;
+    }
+    const node = result.rows[0];
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 120000);
+    try {
+      const resp = await fetch(`http://${node.ip}:${node.port}/api/import`, {
+        method: 'POST',
         headers: { Authorization: `Bearer ${node.token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(req.body),
         signal: controller.signal,
