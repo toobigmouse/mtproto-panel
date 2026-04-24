@@ -106,12 +106,12 @@ export async function exportNodeProxies(nodeId: number): Promise<Blob> {
 
 export async function importNodeProxies(nodeId: number, file: File): Promise<{ imported: number; errors: string[] }> {
   const token = getToken();
-  const formData = new FormData();
-  formData.append('file', file);
+  const text = await file.text();
+  const bundle = JSON.parse(text);
   const response = await fetch(`${API_BASE}/nodes/${nodeId}/import`, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${token}` },
-    body: formData,
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(bundle),
   });
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || 'Import failed');
