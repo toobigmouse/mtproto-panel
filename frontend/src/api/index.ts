@@ -161,6 +161,7 @@ export interface ProxyData {
   trafficDown: number;
   connectedIps: string[];
   maxConnections?: number;
+  nginxPort?: number;
   listenPort?: number;
   vpnSubscription?: string;
   vpnContainerName?: string;
