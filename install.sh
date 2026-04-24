@@ -21,6 +21,38 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
+# Check curl
+if ! command -v curl &> /dev/null; then
+    echo -e "${YELLOW}curl не найден. Устанавливаю...${NC}"
+    if command -v apt-get &> /dev/null; then
+        apt-get update -qq && apt-get install -y -qq curl
+    elif command -v yum &> /dev/null; then
+        yum install -y -q curl
+    elif command -v apk &> /dev/null; then
+        apk add --no-cache curl
+    fi
+    if ! command -v curl &> /dev/null; then
+        echo -e "${RED}Не удалось установить curl.${NC}"
+        exit 1
+    fi
+fi
+
+# Check openssl
+if ! command -v openssl &> /dev/null; then
+    echo -e "${YELLOW}openssl не найден. Устанавливаю...${NC}"
+    if command -v apt-get &> /dev/null; then
+        apt-get update -qq && apt-get install -y -qq openssl
+    elif command -v yum &> /dev/null; then
+        yum install -y -q openssl
+    elif command -v apk &> /dev/null; then
+        apk add --no-cache openssl
+    fi
+    if ! command -v openssl &> /dev/null; then
+        echo -e "${RED}Не удалось установить openssl.${NC}"
+        exit 1
+    fi
+fi
+
 # Check Docker
 if ! command -v docker &> /dev/null; then
     echo -e "${YELLOW}Docker не найден. Устанавливаю Docker...${NC}"
