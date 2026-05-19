@@ -14,9 +14,11 @@ echo ""
 
 # Парсим аргументы
 FORCE_BRANCH=""
-for arg in "$@"; do
-    case "$arg" in
-        --b=*) FORCE_BRANCH="${arg#--b=}" ;;
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --b=*) FORCE_BRANCH="${1#--b=}"; shift ;;
+        --b) FORCE_BRANCH="$2"; shift 2 ;;
+        *) shift ;;
     esac
 done
 
@@ -64,7 +66,8 @@ else
 fi
 echo -e "  Ветка: ${YELLOW}${BRANCH}${NC}"
 
-git pull origin "$BRANCH"
+git fetch origin "$BRANCH"
+git reset --hard "origin/$BRANCH"
 git stash pop 2>/dev/null || true
 
 echo -e "${GREEN}  Обновления получены.${NC}"
