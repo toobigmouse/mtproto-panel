@@ -77,7 +77,7 @@ docker compose down
 echo -e "${GREEN}  Панель остановлена.${NC}"
 
 echo -e "${CYAN}[3/4] Сборка и запуск обновлённой панели...${NC}"
-docker compose up -d --build
+BUILDX_NO_DEFAULT_ATTESTATIONS=1 docker compose up -d --build
 echo -e "  Ожидание запуска..."
 sleep 5
 
