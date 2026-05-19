@@ -25,15 +25,13 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
-// Panel version (reads from package.json bundled in /app)
-let panelVersion = 'unknown';
-try {
-  const pkg = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf-8'));
-  panelVersion = pkg.version || 'unknown';
-} catch {}
-
 app.get('/api/system/version', authMiddleware, (_req, res) => {
-  res.json({ version: panelVersion });
+  let version = 'unknown';
+  try {
+    const pkg = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf-8'));
+    version = pkg.version || 'unknown';
+  } catch {}
+  res.json({ version });
 });
 
 // Trigger panel self-update (fires update.sh and returns immediately)
