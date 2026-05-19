@@ -19,6 +19,7 @@ export default function AddProxyDialog({ open, onClose, nodeId, nodes, onCreated
   const [maxConnections, setMaxConnections] = useState('');
   const [listenPort, setListenPort] = useState('');
   const [vpnSubscription, setVpnSubscription] = useState('');
+  const [maskHost, setMaskHost] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -43,6 +44,7 @@ export default function AddProxyDialog({ open, onClose, nodeId, nodes, onCreated
         maxConnections: maxConnections ? parseInt(maxConnections, 10) : undefined,
         listenPort: listenPort ? parseInt(listenPort, 10) : undefined,
         vpnSubscription: vpnSubscription || undefined,
+        maskHost: maskHost || undefined,
       });
       setDomain('');
       setName('');
@@ -51,6 +53,7 @@ export default function AddProxyDialog({ open, onClose, nodeId, nodes, onCreated
       setMaxConnections('');
       setListenPort('');
       setVpnSubscription('');
+      setMaskHost('');
       setSelectedNodeId(nodeId ? nodeId.toString() : '');
       onCreated();
     } catch (err: any) {
@@ -107,8 +110,12 @@ export default function AddProxyDialog({ open, onClose, nodeId, nodes, onCreated
             <TextInput value={listenPort} onUpdate={setListenPort} placeholder="напр. 8443" size="l" type="number" />
           </div>
           <div className="dialog-field">
-            <label>VPN подписка — VLESS URL (необязательно)</label>
-            <TextInput value={vpnSubscription} onUpdate={setVpnSubscription} placeholder="https://..." size="l" />
+            <label>VPN подписка — VLESS URL или socks5:// (необязательно)</label>
+            <TextInput value={vpnSubscription} onUpdate={setVpnSubscription} placeholder="https://... или socks5://127.0.0.1:10808" size="l" />
+          </div>
+          <div className="dialog-field">
+            <label>Self-steal хост — куда перенаправлять не-MTProto трафик (необязательно)</label>
+            <TextInput value={maskHost} onUpdate={setMaskHost} placeholder="напр. 127.0.0.1:8080" size="l" />
           </div>
         </form>
       </Dialog.Body>

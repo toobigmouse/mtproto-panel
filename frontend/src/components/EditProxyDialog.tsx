@@ -18,6 +18,7 @@ export default function EditProxyDialog({ open, onClose, nodeId, proxy, onUpdate
   const [tag, setTag] = useState(proxy.tag || '');
   const [maxConnections, setMaxConnections] = useState(proxy.maxConnections ? proxy.maxConnections.toString() : '');
   const [vpnSubscription, setVpnSubscription] = useState(proxy.vpnSubscription || '');
+  const [maskHost, setMaskHost] = useState(proxy.maskHost || '');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [secretCopied, setSecretCopied] = useState(false);
@@ -41,6 +42,7 @@ export default function EditProxyDialog({ open, onClose, nodeId, proxy, onUpdate
         tag: tag !== (proxy.tag || '') ? tag : undefined,
         maxConnections: parseInt(maxConnections, 10) || 0,
         vpnSubscription: vpnSubscription !== (proxy.vpnSubscription || '') ? vpnSubscription : undefined,
+        maskHost: maskHost !== (proxy.maskHost || '') ? maskHost : undefined,
       });
       onUpdated();
     } catch (err: any) {
@@ -90,8 +92,12 @@ export default function EditProxyDialog({ open, onClose, nodeId, proxy, onUpdate
             <TextInput value={maxConnections} onUpdate={setMaxConnections} placeholder="0" size="l" type="number" />
           </div>
           <div className="dialog-field">
-            <label>VPN подписка — VLESS URL (оставьте пустым для отключения)</label>
-            <TextInput value={vpnSubscription} onUpdate={setVpnSubscription} placeholder="https://..." size="l" />
+            <label>VPN подписка — VLESS URL или socks5:// (оставьте пустым для отключения)</label>
+            <TextInput value={vpnSubscription} onUpdate={setVpnSubscription} placeholder="https://... или socks5://127.0.0.1:10808" size="l" />
+          </div>
+          <div className="dialog-field">
+            <label>Self-steal — куда перенаправлять не-MTProto трафик (пусто = отключить)</label>
+            <TextInput value={maskHost} onUpdate={setMaskHost} placeholder="напр. 127.0.0.1:8080" size="l" />
           </div>
         </form>
       </Dialog.Body>
