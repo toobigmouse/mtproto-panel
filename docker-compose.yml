@@ -34,6 +34,9 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - .:/app/project
     environment:
       PORT: "3000"
       DB_HOST: db

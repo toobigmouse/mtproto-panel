@@ -49,6 +49,14 @@ export async function getMe() {
   return request<{ user: { userId: number; username: string } }>('/auth/me');
 }
 
+export async function getPanelVersion(): Promise<{ version: string }> {
+  return request<{ version: string }>('/system/version');
+}
+
+export async function updatePanel(): Promise<{ success: boolean; message: string }> {
+  return request<{ success: boolean; message: string }>('/system/update', { method: 'POST' });
+}
+
 export function logout() {
   localStorage.removeItem('token');
   window.location.href = '/login';
@@ -122,8 +130,8 @@ export async function deleteNode(id: number) {
   return request<{ success: boolean }>(`/nodes/${id}`, { method: 'DELETE' });
 }
 
-export async function checkNodeHealth(id: number): Promise<{ online: boolean }> {
-  return request<{ online: boolean }>(`/nodes/${id}/health`);
+export async function checkNodeHealth(id: number): Promise<{ online: boolean; version?: string | null }> {
+  return request<{ online: boolean; version?: string | null }>(`/nodes/${id}/health`);
 }
 
 export async function checkNodeConnection(ip: string, port: number, token: string): Promise<{ online: boolean }> {

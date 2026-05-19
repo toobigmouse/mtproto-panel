@@ -1,5 +1,10 @@
 FROM node:20-alpine
 
+# Required for running update.sh from inside the container
+RUN apk add --no-cache bash git docker-cli \
+    || (sed -i 's|https://|http://|g' /etc/apk/repositories \
+        && apk add --no-cache bash git docker-cli)
+
 WORKDIR /app
 
 COPY package.json package-lock.json* ./

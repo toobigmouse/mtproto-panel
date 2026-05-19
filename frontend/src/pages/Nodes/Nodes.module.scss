@@ -80,6 +80,16 @@
   align-items: center;
   font-size: 13px;
   padding: 2px 0;
+  min-width: 0;
+
+  & > span:first-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+    flex: 1;
+    padding-right: 8px;
+  }
 }
 
 .proxyRowRight {

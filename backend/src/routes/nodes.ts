@@ -110,7 +110,12 @@ router.get('/:id/health', async (req: AuthRequest, res: Response) => {
         signal: controller.signal,
       });
       clearTimeout(timeout);
-      res.json({ online: resp.ok });
+      if (resp.ok) {
+        const body = await resp.json().catch(() => ({})) as Record<string, unknown>;
+        res.json({ online: true, version: body.version ?? null });
+      } else {
+        res.json({ online: false });
+      }
     } catch {
       clearTimeout(timeout);
       res.json({ online: false });

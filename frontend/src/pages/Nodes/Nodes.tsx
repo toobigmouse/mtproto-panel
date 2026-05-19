@@ -9,7 +9,7 @@ export default function Nodes() {
   const navigate = useNavigate();
   const {
     nodes, loading, showAdd, setShowAdd,
-    healthMap, updatingMap, proxiesMap, geoMap,
+    healthMap, updatingMap, proxiesMap, geoMap, versionMap,
     loadNodes, handleDelete, handleUpdate,
   } = useNodes();
 
@@ -58,6 +58,7 @@ export default function Nodes() {
               {node.domain && <div className="proxy-card-field"><span className="label">Домен</span><span>{node.domain}</span></div>}
               <div className="proxy-card-field"><span className="label">Порт</span><span>{node.port}</span></div>
               <div className="proxy-card-field"><span className="label">Добавлено</span><span>{new Date(node.created_at).toLocaleDateString()}</span></div>
+              {versionMap[node.id] && <div className="proxy-card-field"><span className="label">Версия</span><span>v{versionMap[node.id]}</span></div>}
 
               {proxiesMap[node.id] && proxiesMap[node.id].length > 0 && (
                 <div className={s.proxiesSection}>
