@@ -130,7 +130,7 @@ export default function AddProxyDialog({ open, onClose, nodeId, nodes, onCreated
                 }
                 placement="right"
               >
-                <Icon data={CircleQuestion} size={16} style={{ cursor: 'help', color: 'var(--g-color-text-secondary)', flexShrink: 0 }} />
+                <span style={{ cursor: 'help', color: 'var(--g-color-text-secondary)', flexShrink: 0, display: 'inline-flex' }}><Icon data={CircleQuestion} size={16} /></span>
               </Tooltip>
             </div>
             <RadioButton
