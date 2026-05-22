@@ -1,5 +1,6 @@
 import { useState, FormEvent } from 'react';
-import { Dialog, Button, TextInput, Alert, Select } from '@gravity-ui/uikit';
+import { Dialog, Button, TextInput, Alert, Select, RadioButton, Tooltip, Icon } from '@gravity-ui/uikit';
+import { CircleQuestion } from '@gravity-ui/icons';
 import { createProxy, NodeData } from '../api';
 
 interface Props {
@@ -18,7 +19,10 @@ export default function AddProxyDialog({ open, onClose, nodeId, nodes, onCreated
   const [tag, setTag] = useState('');
   const [maxConnections, setMaxConnections] = useState('');
   const [listenPort, setListenPort] = useState('');
+  const [outboundMode, setOutboundMode] = useState<'vpn' | 'tunnel'>('vpn');
   const [vpnSubscription, setVpnSubscription] = useState('');
+  const [natIp, setNatIp] = useState('');
+  const [tunnelInterface, setTunnelInterface] = useState('');
   const [maskHost, setMaskHost] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -43,7 +47,9 @@ export default function AddProxyDialog({ open, onClose, nodeId, nodes, onCreated
         note: note || undefined,
         maxConnections: maxConnections ? parseInt(maxConnections, 10) : undefined,
         listenPort: listenPort ? parseInt(listenPort, 10) : undefined,
-        vpnSubscription: vpnSubscription || undefined,
+        vpnSubscription: outboundMode === 'vpn' ? (vpnSubscription || undefined) : undefined,
+        natIp: outboundMode === 'tunnel' ? (natIp || undefined) : undefined,
+        tunnelInterface: outboundMode === 'tunnel' ? (tunnelInterface || undefined) : undefined,
         maskHost: maskHost || undefined,
       });
       setDomain('');
@@ -53,6 +59,8 @@ export default function AddProxyDialog({ open, onClose, nodeId, nodes, onCreated
       setMaxConnections('');
       setListenPort('');
       setVpnSubscription('');
+      setNatIp('');
+      setTunnelInterface('');
       setMaskHost('');
       setSelectedNodeId(nodeId ? nodeId.toString() : '');
       onCreated();
@@ -110,9 +118,49 @@ export default function AddProxyDialog({ open, onClose, nodeId, nodes, onCreated
             <TextInput value={listenPort} onUpdate={setListenPort} placeholder="напр. 8443" size="l" type="number" />
           </div>
           <div className="dialog-field">
-            <label>VPN подписка — VLESS URL или socks5:// (необязательно)</label>
-            <TextInput value={vpnSubscription} onUpdate={setVpnSubscription} placeholder="https://... или socks5://127.0.0.1:10808" size="l" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <label style={{ margin: 0 }}>Исходящий трафик</label>
+              <Tooltip
+                content={
+                  <div style={{ maxWidth: 280 }}>
+                    <b>VPN-подписка</b> — трафик идёт через VLESS/SOCKS5 прокси. Промо-контент от Telegram <b>не работает</b>.<br /><br />
+                    <b>Тоннель</b> — трафик идёт через SSH/OpenVPN тоннель. Промо работает при правильно настроенном NAT IP.<br /><br />
+                    Настройку тоннеля см. в инструкции.
+                  </div>
+                }
+                placement="right"
+              >
+                <Icon data={CircleQuestion} size={16} style={{ cursor: 'help', color: 'var(--g-color-text-secondary)', flexShrink: 0 }} />
+              </Tooltip>
+            </div>
+            <RadioButton
+              value={outboundMode}
+              onUpdate={(v) => setOutboundMode(v as 'vpn' | 'tunnel')}
+              size="m"
+              options={[
+                { value: 'vpn', content: 'VPN-подписка' },
+                { value: 'tunnel', content: 'Тоннель (SSH/VPN)' },
+              ]}
+            />
           </div>
+          {outboundMode === 'vpn' && (
+            <div className="dialog-field">
+              <label>VLESS URL или socks5:// (необязательно)</label>
+              <TextInput value={vpnSubscription} onUpdate={setVpnSubscription} placeholder="https://... или socks5://127.0.0.1:10808" size="l" />
+            </div>
+          )}
+          {outboundMode === 'tunnel' && (
+            <>
+              <div className="dialog-field">
+                <label>NAT IP — публичный IP тоннельного сервера</label>
+                <TextInput value={natIp} onUpdate={setNatIp} placeholder="напр. 150.241.105.36" size="l" />
+              </div>
+              <div className="dialog-field">
+                <label>Интерфейс тоннеля</label>
+                <TextInput value={tunnelInterface} onUpdate={setTunnelInterface} placeholder="напр. tun0" size="l" />
+              </div>
+            </>
+          )}
           <div className="dialog-field">
             <label>Self-steal хост — куда перенаправлять не-MTProto трафик (необязательно)</label>
             <TextInput value={maskHost} onUpdate={setMaskHost} placeholder="напр. 127.0.0.1:8080" size="l" />

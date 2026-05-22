@@ -174,6 +174,8 @@ export interface ProxyData {
   vpnSubscription?: string;
   vpnContainerName?: string;
   maskHost?: string;
+  natIp?: string;
+  tunnelInterface?: string;
 }
 
 export interface ProxyStatsData {
@@ -201,6 +203,8 @@ export interface CreateProxyRequest {
   listenPort?: number;
   vpnSubscription?: string;
   maskHost?: string;
+  natIp?: string;
+  tunnelInterface?: string;
 }
 
 export interface StatsSnapshotData {
@@ -235,7 +239,7 @@ export async function createProxy(nodeId: number, data: CreateProxyRequest) {
   });
 }
 
-export async function updateProxy(nodeId: number, proxyId: string, data: { domain?: string; tag?: string; name?: string; note?: string; maxConnections?: number; vpnSubscription?: string; maskHost?: string }) {
+export async function updateProxy(nodeId: number, proxyId: string, data: { domain?: string; tag?: string; name?: string; note?: string; maxConnections?: number; vpnSubscription?: string; maskHost?: string; natIp?: string; tunnelInterface?: string }) {
   return request<ProxyData>(`/nodes/${nodeId}/proxies/${proxyId}`, {
     method: 'PUT',
     body: JSON.stringify(data),
