@@ -75,12 +75,16 @@ echo -e "${GREEN}  Обновления получены.${NC}"
 # Возвращаемся в директорию панели
 cd "$(dirname "$0")"
 
+# Фиксируем имя проекта, чтобы volume pgdata всегда именовался одинаково
+# независимо от того, из какой директории запущен скрипт
+export COMPOSE_PROJECT_NAME=mtproto-panel
+
 echo -e "${CYAN}[2/4] Остановка панели...${NC}"
 docker compose down
 echo -e "${GREEN}  Панель остановлена.${NC}"
 
 echo -e "${CYAN}[3/4] Сборка и запуск обновлённой панели...${NC}"
-BUILDX_NO_DEFAULT_ATTESTATIONS=1 docker compose up -d --build
+BUILDX_NO_DEFAULT_ATTESTATIONS=1 DOCKER_BUILDKIT=1 docker compose up -d --build
 echo -e "  Ожидание запуска..."
 sleep 5
 

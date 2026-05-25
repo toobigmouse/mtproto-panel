@@ -6,6 +6,7 @@ COPY package.json package-lock.json* ./
 RUN npm install
 
 COPY . .
+ENV NODE_OPTIONS="--max-old-space-size=384"
 RUN npm run build
 
 FROM nginx:alpine

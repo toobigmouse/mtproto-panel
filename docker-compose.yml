@@ -1,4 +1,4 @@
-version: "3.8"
+name: mtproto-panel
 
 services:
   db:
@@ -23,7 +23,9 @@ services:
       retries: 5
 
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      provenance: false
     container_name: mtproto-panel-backend
     restart: unless-stopped
     logging:
@@ -49,7 +51,9 @@ services:
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      provenance: false
     container_name: mtproto-panel-frontend
     restart: unless-stopped
     logging:
