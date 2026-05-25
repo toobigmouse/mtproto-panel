@@ -83,8 +83,16 @@ echo -e "${CYAN}[2/4] Остановка панели...${NC}"
 docker compose down
 echo -e "${GREEN}  Панель остановлена.${NC}"
 
-echo -e "${CYAN}[3/4] Сборка и запуск обновлённой панели...${NC}"
-BUILDX_NO_DEFAULT_ATTESTATIONS=1 DOCKER_BUILDKIT=1 docker compose up -d --build
+echo -e "${CYAN}[3/4] Загрузка обновлённых образов...${NC}"
+if docker compose pull 2>/dev/null; then
+    echo -e "${GREEN}  Образы загружены из реестра.${NC}"
+else
+    echo -e "${YELLOW}  Не удалось загрузить образы из реестра, собираем локально...${NC}"
+    BUILDX_NO_DEFAULT_ATTESTATIONS=1 DOCKER_BUILDKIT=1 docker compose build
+fi
+
+echo -e "${CYAN}  Запуск панели...${NC}"
+docker compose up -d
 echo -e "  Ожидание запуска..."
 sleep 5
 
