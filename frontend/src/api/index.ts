@@ -176,6 +176,40 @@ export interface ProxyData {
   maskHost?: string;
   natIp?: string;
   tunnelInterface?: string;
+  useMiddleProxy?: boolean;
+  fastMode?: boolean;
+  me2dcFallback?: boolean;
+  me2dcFast?: boolean;
+  meKeepaliveEnabled?: boolean;
+  meKeepaliveIntervalSecs?: number;
+  meKeepaliveJitterSecs?: number;
+  meKeepalivePayloadRandom?: boolean;
+  meReconnectBackoffBaseMs?: number;
+  meReconnectBackoffCapMs?: number;
+  meReconnectFastRetryCount?: number;
+  desyncAllFull?: boolean;
+  meWriterPickMode?: string;
+  meWarmupStaggerEnabled?: boolean;
+  meWarmupStepDelayMs?: number;
+  meWarmupStepJitterMs?: number;
+  beobachten?: boolean;
+  beobachtenMinutes?: number;
+  beobachtenFlushSecs?: number;
+  beobachtenFile?: string;
+  upstreamConnectRetryAttempts?: number;
+  upstreamConnectRetryBackoffMs?: number;
+  tgConnect?: boolean;
+  rstOnClose?: boolean;
+  logLevel?: string;
+  unknownDcFileLogEnabled?: boolean;
+  updateEvery?: number;
+  networkPrefer?: string;
+  stunServers?: string[];
+  serverClientMss?: number;
+  censorshipTlsDomain?: string;
+  censorshipTlsEmulation?: string;
+  censorshipTlsFrontDir?: string;
+  meInitRetryAttempts?: number;
 }
 
 export interface ProxyStatsData {
@@ -205,6 +239,87 @@ export interface CreateProxyRequest {
   maskHost?: string;
   natIp?: string;
   tunnelInterface?: string;
+  useMiddleProxy?: boolean;
+  fastMode?: boolean;
+  me2dcFallback?: boolean;
+  me2dcFast?: boolean;
+  meKeepaliveEnabled?: boolean;
+  meKeepaliveIntervalSecs?: number;
+  meKeepaliveJitterSecs?: number;
+  meKeepalivePayloadRandom?: boolean;
+  meReconnectBackoffBaseMs?: number;
+  meReconnectBackoffCapMs?: number;
+  meReconnectFastRetryCount?: number;
+  desyncAllFull?: boolean;
+  meWriterPickMode?: string;
+  meWarmupStaggerEnabled?: boolean;
+  meWarmupStepDelayMs?: number;
+  meWarmupStepJitterMs?: number;
+  beobachten?: boolean;
+  beobachtenMinutes?: number;
+  beobachtenFlushSecs?: number;
+  beobachtenFile?: string;
+  upstreamConnectRetryAttempts?: number;
+  upstreamConnectRetryBackoffMs?: number;
+  tgConnect?: boolean;
+  rstOnClose?: boolean;
+  logLevel?: string;
+  unknownDcFileLogEnabled?: boolean;
+  updateEvery?: number;
+  networkPrefer?: string;
+  stunServers?: string[];
+  serverClientMss?: number;
+  censorshipTlsDomain?: string;
+  censorshipTlsEmulation?: string;
+  censorshipTlsFrontDir?: string;
+  meInitRetryAttempts?: number;
+}
+
+export interface UpdateProxyRequest {
+  domain?: string;
+  tag?: string;
+  name?: string;
+  note?: string;
+  maxConnections?: number;
+  listenPort?: number;
+  vpnSubscription?: string;
+  maskHost?: string;
+  natIp?: string;
+  tunnelInterface?: string;
+  useMiddleProxy?: boolean;
+  fastMode?: boolean;
+  me2dcFallback?: boolean;
+  me2dcFast?: boolean;
+  meKeepaliveEnabled?: boolean;
+  meKeepaliveIntervalSecs?: number;
+  meKeepaliveJitterSecs?: number;
+  meKeepalivePayloadRandom?: boolean;
+  meReconnectBackoffBaseMs?: number;
+  meReconnectBackoffCapMs?: number;
+  meReconnectFastRetryCount?: number;
+  desyncAllFull?: boolean;
+  meWriterPickMode?: string;
+  meWarmupStaggerEnabled?: boolean;
+  meWarmupStepDelayMs?: number;
+  meWarmupStepJitterMs?: number;
+  beobachten?: boolean;
+  beobachtenMinutes?: number;
+  beobachtenFlushSecs?: number;
+  beobachtenFile?: string;
+  upstreamConnectRetryAttempts?: number;
+  upstreamConnectRetryBackoffMs?: number;
+  tgConnect?: boolean;
+  rstOnClose?: boolean;
+  logLevel?: string;
+  unknownDcFileLogEnabled?: boolean;
+  updateEvery?: number;
+  networkPrefer?: string;
+  stunServers?: string[];
+  serverClientMss?: number;
+  censorshipTlsDomain?: string;
+  censorshipTlsEmulation?: string;
+  censorshipTlsFrontDir?: string;
+  meInitRetryAttempts?: number;
 }
 
 export interface StatsSnapshotData {
@@ -239,7 +354,7 @@ export async function createProxy(nodeId: number, data: CreateProxyRequest) {
   });
 }
 
-export async function updateProxy(nodeId: number, proxyId: string, data: { domain?: string; tag?: string; name?: string; note?: string; maxConnections?: number; vpnSubscription?: string; maskHost?: string; natIp?: string; tunnelInterface?: string }) {
+export async function updateProxy(nodeId: number, proxyId: string, data: UpdateProxyRequest) {
   return request<ProxyData>(`/nodes/${nodeId}/proxies/${proxyId}`, {
     method: 'PUT',
     body: JSON.stringify(data),

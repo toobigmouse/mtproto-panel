@@ -24,6 +24,42 @@ export default function AddProxyDialog({ open, onClose, nodeId, nodes, onCreated
   const [natIp, setNatIp] = useState('');
   const [tunnelInterface, setTunnelInterface] = useState('');
   const [maskHost, setMaskHost] = useState('');
+  const [advancedOptions, setAdvancedOptions] = useState({
+    useMiddleProxy: true,
+    fastMode: true,
+    me2dcFallback: true,
+    me2dcFast: true,
+    meKeepaliveEnabled: true,
+    meKeepaliveIntervalSecs: 5,
+    meKeepaliveJitterSecs: 1,
+    meKeepalivePayloadRandom: true,
+    meReconnectBackoffBaseMs: 200,
+    meReconnectBackoffCapMs: 1000,
+    meReconnectFastRetryCount: 12,
+    desyncAllFull: true,
+    meWriterPickMode: 'fast',
+    meWarmupStaggerEnabled: true,
+    meWarmupStepDelayMs: 30,
+    meWarmupStepJitterMs: 5,
+    beobachten: true,
+    beobachtenMinutes: 15,
+    beobachtenFlushSecs: 5,
+    beobachtenFile: '/tmp/telemt-beobachten.json',
+    upstreamConnectRetryAttempts: 5,
+    upstreamConnectRetryBackoffMs: 500,
+    tgConnect: true,
+    rstOnClose: true,
+    logLevel: 'info',
+    unknownDcFileLogEnabled: true,
+    updateEvery: 30,
+    networkPrefer: 'system',
+    stunServers: 'stun.l.google.com:19302',
+    serverClientMss: 1360,
+    censorshipTlsDomain: '',
+    censorshipTlsEmulation: 'tls',
+    censorshipTlsFrontDir: '',
+    meInitRetryAttempts: 5,
+  });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -51,6 +87,43 @@ export default function AddProxyDialog({ open, onClose, nodeId, nodes, onCreated
         natIp: outboundMode === 'tunnel' ? (natIp || undefined) : undefined,
         tunnelInterface: outboundMode === 'tunnel' ? (tunnelInterface || undefined) : undefined,
         maskHost: maskHost || undefined,
+        useMiddleProxy: advancedOptions.useMiddleProxy,
+        fastMode: advancedOptions.fastMode,
+        me2dcFallback: advancedOptions.me2dcFallback,
+        me2dcFast: advancedOptions.me2dcFast,
+        meKeepaliveEnabled: advancedOptions.meKeepaliveEnabled,
+        meKeepaliveIntervalSecs: advancedOptions.meKeepaliveIntervalSecs,
+        meKeepaliveJitterSecs: advancedOptions.meKeepaliveJitterSecs,
+        meKeepalivePayloadRandom: advancedOptions.meKeepalivePayloadRandom,
+        meReconnectBackoffBaseMs: advancedOptions.meReconnectBackoffBaseMs,
+        meReconnectBackoffCapMs: advancedOptions.meReconnectBackoffCapMs,
+        meReconnectFastRetryCount: advancedOptions.meReconnectFastRetryCount,
+        desyncAllFull: advancedOptions.desyncAllFull,
+        meWriterPickMode: advancedOptions.meWriterPickMode,
+        meWarmupStaggerEnabled: advancedOptions.meWarmupStaggerEnabled,
+        meWarmupStepDelayMs: advancedOptions.meWarmupStepDelayMs,
+        meWarmupStepJitterMs: advancedOptions.meWarmupStepJitterMs,
+        beobachten: advancedOptions.beobachten,
+        beobachtenMinutes: advancedOptions.beobachtenMinutes,
+        beobachtenFlushSecs: advancedOptions.beobachtenFlushSecs,
+        beobachtenFile: advancedOptions.beobachtenFile,
+        upstreamConnectRetryAttempts: advancedOptions.upstreamConnectRetryAttempts,
+        upstreamConnectRetryBackoffMs: advancedOptions.upstreamConnectRetryBackoffMs,
+        tgConnect: advancedOptions.tgConnect,
+        rstOnClose: advancedOptions.rstOnClose,
+        logLevel: advancedOptions.logLevel,
+        unknownDcFileLogEnabled: advancedOptions.unknownDcFileLogEnabled,
+        updateEvery: advancedOptions.updateEvery,
+        networkPrefer: advancedOptions.networkPrefer,
+        stunServers: advancedOptions.stunServers
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean),
+        serverClientMss: advancedOptions.serverClientMss,
+        censorshipTlsDomain: advancedOptions.censorshipTlsDomain || undefined,
+        censorshipTlsEmulation: advancedOptions.censorshipTlsEmulation,
+        censorshipTlsFrontDir: advancedOptions.censorshipTlsFrontDir || undefined,
+        meInitRetryAttempts: advancedOptions.meInitRetryAttempts,
       });
       setDomain('');
       setName('');
@@ -63,6 +136,42 @@ export default function AddProxyDialog({ open, onClose, nodeId, nodes, onCreated
       setTunnelInterface('');
       setMaskHost('');
       setSelectedNodeId(nodeId ? nodeId.toString() : '');
+      setAdvancedOptions({
+        useMiddleProxy: true,
+        fastMode: true,
+        me2dcFallback: true,
+        me2dcFast: true,
+        meKeepaliveEnabled: true,
+        meKeepaliveIntervalSecs: 5,
+        meKeepaliveJitterSecs: 1,
+        meKeepalivePayloadRandom: true,
+        meReconnectBackoffBaseMs: 200,
+        meReconnectBackoffCapMs: 1000,
+        meReconnectFastRetryCount: 12,
+        desyncAllFull: true,
+        meWriterPickMode: 'fast',
+        meWarmupStaggerEnabled: true,
+        meWarmupStepDelayMs: 30,
+        meWarmupStepJitterMs: 5,
+        beobachten: true,
+        beobachtenMinutes: 15,
+        beobachtenFlushSecs: 5,
+        beobachtenFile: '/tmp/telemt-beobachten.json',
+        upstreamConnectRetryAttempts: 5,
+        upstreamConnectRetryBackoffMs: 500,
+        tgConnect: true,
+        rstOnClose: true,
+        logLevel: 'info',
+        unknownDcFileLogEnabled: true,
+        updateEvery: 30,
+        networkPrefer: 'system',
+        stunServers: 'stun.l.google.com:19302',
+        serverClientMss: 1360,
+        censorshipTlsDomain: '',
+        censorshipTlsEmulation: 'tls',
+        censorshipTlsFrontDir: '',
+        meInitRetryAttempts: 5,
+      });
       onCreated();
     } catch (err: any) {
       setError(err.message);
@@ -164,6 +273,93 @@ export default function AddProxyDialog({ open, onClose, nodeId, nodes, onCreated
           <div className="dialog-field">
             <label>Self-steal хост — куда перенаправлять не-MTProto трафик (необязательно)</label>
             <TextInput value={maskHost} onUpdate={setMaskHost} placeholder="напр. 127.0.0.1:8080" size="l" />
+          </div>
+          <div className="dialog-field">
+            <label style={{ fontWeight: 600, marginBottom: 8, display: 'block' }}>Дополнительные настройки telemt</label>
+            <div style={{ display: 'grid', gap: 12 }}>
+              <Select
+                value={[advancedOptions.useMiddleProxy ? 'true' : 'false']}
+                onUpdate={(val) => setAdvancedOptions((prev) => ({ ...prev, useMiddleProxy: val[0] === 'true' }))}
+                options={[
+                  { value: 'true', content: 'use_middle_proxy = true' },
+                  { value: 'false', content: 'use_middle_proxy = false' },
+                ]}
+                width="max"
+              />
+              <Select
+                value={[advancedOptions.fastMode ? 'true' : 'false']}
+                onUpdate={(val) => setAdvancedOptions((prev) => ({ ...prev, fastMode: val[0] === 'true' }))}
+                options={[
+                  { value: 'true', content: 'fast_mode = true' },
+                  { value: 'false', content: 'fast_mode = false' },
+                ]}
+                width="max"
+              />
+              <div style={{ display: 'grid', gap: 8 }}>
+                <label>stun_servers (comma-separated)</label>
+                <TextInput
+                  value={advancedOptions.stunServers}
+                  onUpdate={(val) => setAdvancedOptions((prev) => ({ ...prev, stunServers: val }))}
+                  placeholder="stun.l.google.com:19302, stun1.l.google.com:19302"
+                  size="l"
+                />
+              </div>
+              <div style={{ display: 'grid', gap: 8 }}>
+                <label>censorship_tls_domain (необязательно)</label>
+                <TextInput
+                  value={advancedOptions.censorshipTlsDomain}
+                  onUpdate={(val) => setAdvancedOptions((prev) => ({ ...prev, censorshipTlsDomain: val }))}
+                  placeholder="Example: www.google.com"
+                  size="l"
+                />
+              </div>
+              <Select
+                value={[advancedOptions.censorshipTlsEmulation]}
+                onUpdate={(val) => setAdvancedOptions((prev) => ({ ...prev, censorshipTlsEmulation: val[0] || 'tls' }))}
+                options={[
+                  { value: 'tls', content: 'tls' },
+                  { value: 'http', content: 'http' },
+                  { value: 'none', content: 'none' },
+                ]}
+                width="max"
+              />
+              <div style={{ display: 'grid', gap: 8 }}>
+                <label>censorship_tls_front_dir</label>
+                <TextInput
+                  value={advancedOptions.censorshipTlsFrontDir}
+                  onUpdate={(val) => setAdvancedOptions((prev) => ({ ...prev, censorshipTlsFrontDir: val }))}
+                  placeholder="tls"
+                  size="l"
+                />
+              </div>
+              <div style={{ display: 'grid', gap: 8 }}>
+                <label>me_init_retry_attempts</label>
+                <TextInput
+                  type="number"
+                  value={advancedOptions.meInitRetryAttempts.toString()}
+                  onUpdate={(val) => setAdvancedOptions((prev) => ({ ...prev, meInitRetryAttempts: parseInt(val, 10) || 0 }))}
+                  size="l"
+                />
+              </div>
+              <div style={{ display: 'grid', gap: 8 }}>
+                <label>log_level</label>
+                <Select
+                  value={[advancedOptions.logLevel]}
+                  onUpdate={(val) => setAdvancedOptions((prev) => ({ ...prev, logLevel: val[0] || 'info' }))}
+                  options={['debug', 'info', 'warn', 'error'].map((level) => ({ value: level, content: level }))}
+                  width="max"
+                />
+              </div>
+              <div style={{ display: 'grid', gap: 8 }}>
+                <label>network_prefer</label>
+                <Select
+                  value={[advancedOptions.networkPrefer]}
+                  onUpdate={(val) => setAdvancedOptions((prev) => ({ ...prev, networkPrefer: val[0] || 'system' }))}
+                  options={['system', 'ipv4', 'ipv6'].map((value) => ({ value, content: value }))}
+                  width="max"
+                />
+              </div>
+            </div>
           </div>
         </form>
       </Dialog.Body>
