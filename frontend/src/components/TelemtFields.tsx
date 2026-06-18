@@ -26,7 +26,7 @@ export const DEFAULT_ADVANCED = {
   upstreamConnectRetryBackoffMs: 500,
   tgConnect: true,
   rstOnClose: true,
-  logLevel: 'info',
+  logLevel: 'silent',
   unknownDcFileLogEnabled: true,
   updateEvery: 30,
   networkPrefer: 'system',
@@ -282,7 +282,7 @@ export function TelemtFields({ opts, set }: TelemtFieldsProps) {
         <Select
           value={[opts.logLevel]}
           onUpdate={(val: string[]) => upd('logLevel')(val[0] || 'info')}
-          options={['debug', 'info', 'warn', 'error'].map((level) => ({ value: level, content: level }))}
+          options={[`debug`, `verbose`, `normal`, `silent`].map((level) => ({ value: level, content: level }))}
           width="max"
         />
       </div>
