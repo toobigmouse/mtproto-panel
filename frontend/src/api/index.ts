@@ -198,7 +198,7 @@ export interface ProxyData {
   beobachtenFile?: string;
   upstreamConnectRetryAttempts?: number;
   upstreamConnectRetryBackoffMs?: number;
-  tgConnect?: boolean;
+  tgConnect?: number;
   rstOnClose?: string;
   logLevel?: string;
   unknownDcFileLogEnabled?: boolean;
@@ -261,7 +261,7 @@ export interface CreateProxyRequest {
   beobachtenFile?: string;
   upstreamConnectRetryAttempts?: number;
   upstreamConnectRetryBackoffMs?: number;
-  tgConnect?: boolean;
+  tgConnect?: number;
   rstOnClose?: string;
   logLevel?: string;
   unknownDcFileLogEnabled?: boolean;
@@ -308,7 +308,7 @@ export interface UpdateProxyRequest {
   beobachtenFile?: string;
   upstreamConnectRetryAttempts?: number;
   upstreamConnectRetryBackoffMs?: number;
-  tgConnect?: boolean;
+  tgConnect?: number;
   rstOnClose?: string;
   logLevel?: string;
   unknownDcFileLogEnabled?: boolean;

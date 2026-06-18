@@ -24,7 +24,7 @@ export const DEFAULT_ADVANCED = {
   beobachtenFile: '/tmp/telemt-beobachten.json',
   upstreamConnectRetryAttempts: 5,
   upstreamConnectRetryBackoffMs: 500,
-  tgConnect: true,
+  tgConnect: 10,
   rstOnClose: "off",
   logLevel: 'silent',
   unknownDcFileLogEnabled: true,
@@ -127,7 +127,7 @@ export function TelemtFields({ opts, set }: TelemtFieldsProps) {
 
       <div className="dialog-field">
         <FieldLabel label="tg_connect" help="Использовать TG Connect для подключения к серверам Telegram." />
-        <BoolSelect value={opts.tgConnect} onUpdate={upd('tgConnect')} />
+        <NumInput value={opts.tgConnect} onChange={upd('tgConnect')} />
       </div>
 
       <div className="dialog-field">
