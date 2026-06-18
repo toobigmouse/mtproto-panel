@@ -14,7 +14,7 @@ export const DEFAULT_ADVANCED = {
   meReconnectBackoffCapMs: 1000,
   meReconnectFastRetryCount: 12,
   desyncAllFull: true,
-  meWriterPickMode: 'fast',
+  meWriterPickMode: 'p2c',
   meWarmupStaggerEnabled: true,
   meWarmupStepDelayMs: 30,
   meWarmupStepJitterMs: 5,
@@ -25,7 +25,7 @@ export const DEFAULT_ADVANCED = {
   upstreamConnectRetryAttempts: 5,
   upstreamConnectRetryBackoffMs: 500,
   tgConnect: true,
-  rstOnClose: true,
+  rstOnClose: "off",
   logLevel: 'silent',
   unknownDcFileLogEnabled: true,
   updateEvery: 30,
@@ -131,8 +131,17 @@ export function TelemtFields({ opts, set }: TelemtFieldsProps) {
       </div>
 
       <div className="dialog-field">
-        <FieldLabel label="rst_on_close" help="Отправлять TCP RST при закрытии соединения вместо FIN для ускорения освобождения ресурсов." />
-        <BoolSelect value={opts.rstOnClose} onUpdate={upd('rstOnClose')} />
+        <FieldLabel label="rst_on_close" help=" Управляет поведением SO_LINGER(0) на принятых клиентских TCP-сокетах. На высоконагруженных прокси-серверах накапливаются FIN-WAIT-1 и осиротевшие (orphan) сокеты от соединений, которые не завершают Telegram-рукопожатие (сканеры, DPI-зонды, боты). Эта опция позволяет отправлять немедленный RST вместо корректного FIN для таких соединений, мгновенно освобождая ресурсы ядра.
+
+off — по умолчанию. Обычный FIN при закрытии всех соединений; поведение не меняется.
+errors — SO_LINGER(0) устанавливается при accept(). Если клиент успешно проходит аутентификацию, linger сбрасывается и relay-сессия закрывается корректно через FIN. Соединения, закрытые до завершения рукопожатия (таймауты, ошибки крипто, сканеры), отправляют RST.
+always — SO_LINGER(0) устанавливается при accept() и никогда не сбрасывается. Все закрытия отправляют RST независимо от результата рукопожатия." />
+        <Select
+          value={[opts.rstOnClose]}
+          onUpdate={(val: string[]) => upd('rstOnClose')(val[0] || 'off')}
+          options={['off', 'errors', 'always'].map((v) => ({ value: v, content: v }))}
+          width="max"
+        />
       </div>
 
       <div className="dialog-field">
@@ -202,8 +211,8 @@ export function TelemtFields({ opts, set }: TelemtFieldsProps) {
       </div>
 
       <div className="dialog-field">
-        <FieldLabel label="me_writer_pick_mode" help="Режим выбора writer'а для ME соединений. 'fast' — приоритет скорости." />
-        <TextInput value={opts.meWriterPickMode} onUpdate={upd('meWriterPickMode')} placeholder="fast" size="l" />
+        <FieldLabel label="me_writer_pick_mode" help="Режим выбора writer'а для ME соединений. 'p2c' — приоритет скорости." />
+        <TextInput value={opts.meWriterPickMode} onUpdate={upd('meWriterPickMode')} placeholder="p2c" size="l" />
       </div>
 
       <div className="dialog-field">
