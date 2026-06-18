@@ -207,7 +207,7 @@ export interface ProxyData {
   stunServers?: string[];
   serverClientMss?: number;
   censorshipTlsDomain?: string;
-  censorshipTlsEmulation?: string;
+  censorshipTlsEmulation?: boolean;
   censorshipTlsFrontDir?: string;
   meInitRetryAttempts?: number;
 }

@@ -33,7 +33,7 @@ export const DEFAULT_ADVANCED = {
   stunServers: 'stun.l.google.com:19302',
   serverClientMss: 1360,
   censorshipTlsDomain: '',
-  censorshipTlsEmulation: 'tls',
+  censorshipTlsEmulation: true,
   censorshipTlsFrontDir: '',
   meInitRetryAttempts: 5,
 };
@@ -261,17 +261,8 @@ export function TelemtFields({ opts, set }: TelemtFieldsProps) {
       </div>
 
       <div className="dialog-field">
-        <FieldLabel label="censorship_tls_emulation" help="Тип эмуляции протокола при обходе цензуры." />
-        <Select
-          value={[opts.censorshipTlsEmulation]}
-          onUpdate={(val: string[]) => upd('censorshipTlsEmulation')(val[0] || 'tls')}
-          options={[
-            { value: 'tls', content: 'tls' },
-            { value: 'http', content: 'http' },
-            { value: 'none', content: 'none' },
-          ]}
-          width="max"
-        />
+        <FieldLabel label="censorship_tls_emulation" help="Включает эмуляцию TLS при обходе цензуры." />
+        <BoolSelect value={opts.censorshipTlsEmulation} onUpdate={upd('censorshipTlsEmulation')} />
       </div>
 
       <div className="dialog-field">
