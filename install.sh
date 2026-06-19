@@ -352,7 +352,7 @@ if docker network inspect mtproto-net &>/dev/null; then
         docker network rm mtproto-net 2>/dev/null || true
     fi
 fi
-docker compose up -d --build
+BUILDX_NO_DEFAULT_ATTESTATIONS=1 docker compose up -d --build
 
 if [ $? -ne 0 ]; then
     echo -e "${RED}Ошибка при запуске контейнеров.${NC}"

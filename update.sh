@@ -14,9 +14,11 @@ echo ""
 
 # Парсим аргументы
 FORCE_BRANCH=""
-for arg in "$@"; do
-    case "$arg" in
-        --b=*) FORCE_BRANCH="${arg#--b=}" ;;
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --b=*) FORCE_BRANCH="${1#--b=}"; shift ;;
+        --b) FORCE_BRANCH="$2"; shift 2 ;;
+        *) shift ;;
     esac
 done
 
@@ -64,7 +66,8 @@ else
 fi
 echo -e "  Ветка: ${YELLOW}${BRANCH}${NC}"
 
-git pull origin "$BRANCH"
+git fetch origin "$BRANCH"
+git reset --hard "origin/$BRANCH"
 git stash pop 2>/dev/null || true
 
 echo -e "${GREEN}  Обновления получены.${NC}"
@@ -72,12 +75,24 @@ echo -e "${GREEN}  Обновления получены.${NC}"
 # Возвращаемся в директорию панели
 cd "$(dirname "$0")"
 
+# Фиксируем имя проекта, чтобы volume pgdata всегда именовался одинаково
+# независимо от того, из какой директории запущен скрипт
+export COMPOSE_PROJECT_NAME=mtproto-panel
+
 echo -e "${CYAN}[2/4] Остановка панели...${NC}"
 docker compose down
 echo -e "${GREEN}  Панель остановлена.${NC}"
 
-echo -e "${CYAN}[3/4] Сборка и запуск обновлённой панели...${NC}"
-docker compose up -d --build
+echo -e "${CYAN}[3/4] Загрузка обновлённых образов...${NC}"
+if docker compose pull 2>/dev/null; then
+    echo -e "${GREEN}  Образы загружены из реестра.${NC}"
+else
+    echo -e "${YELLOW}  Не удалось загрузить образы из реестра, собираем локально...${NC}"
+    BUILDX_NO_DEFAULT_ATTESTATIONS=1 DOCKER_BUILDKIT=1 docker compose build
+fi
+
+echo -e "${CYAN}  Запуск панели...${NC}"
+docker compose up -d
 echo -e "  Ожидание запуска..."
 sleep 5
 

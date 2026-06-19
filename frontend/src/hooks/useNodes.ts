@@ -9,6 +9,7 @@ export function useNodes() {
   const [updatingMap, setUpdatingMap] = useState<Record<number, boolean>>({});
   const [proxiesMap, setProxiesMap] = useState<Record<number, ProxyData[]>>({});
   const [geoMap, setGeoMap] = useState<Record<string, string>>({});
+  const [versionMap, setVersionMap] = useState<Record<number, string | null>>({});
 
   const lookupNodeGeo = async (nodeList: NodeData[]) => {
     const ips = nodeList.map((n) => n.ip).filter((ip) => !geoMap[ip]);
@@ -51,8 +52,9 @@ export function useNodes() {
     await Promise.all(
       nodeList.map(async (node) => {
         try {
-          const { online } = await checkNodeHealth(node.id);
+          const { online, version } = await checkNodeHealth(node.id);
           setHealthMap((prev) => ({ ...prev, [node.id]: online }));
+          setVersionMap((prev) => ({ ...prev, [node.id]: version ?? null }));
         } catch {
           setHealthMap((prev) => ({ ...prev, [node.id]: false }));
         }
@@ -103,7 +105,7 @@ export function useNodes() {
 
   return {
     nodes, loading, showAdd, setShowAdd,
-    healthMap, updatingMap, proxiesMap, geoMap,
+    healthMap, updatingMap, proxiesMap, geoMap, versionMap,
     loadNodes, handleDelete, handleUpdate,
   };
 }

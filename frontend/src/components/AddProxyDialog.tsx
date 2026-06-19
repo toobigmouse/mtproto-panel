@@ -1,6 +1,7 @@
 import { useState, FormEvent } from 'react';
-import { Dialog, Button, TextInput, Alert, Select } from '@gravity-ui/uikit';
+import { Dialog, TextInput, Alert, Select, RadioButton, HelpMark, Tabs } from '@gravity-ui/uikit';
 import { createProxy, NodeData } from '../api';
+import { DEFAULT_ADVANCED, AdvancedOptions, TelemtFields } from './TelemtFields';
 
 interface Props {
   open: boolean;
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export default function AddProxyDialog({ open, onClose, nodeId, nodes, onCreated }: Props) {
+  const [activeTab, setActiveTab] = useState('basic');
   const [selectedNodeId, setSelectedNodeId] = useState<string>(nodeId ? nodeId.toString() : '');
   const [domain, setDomain] = useState('');
   const [name, setName] = useState('');
@@ -18,7 +20,12 @@ export default function AddProxyDialog({ open, onClose, nodeId, nodes, onCreated
   const [tag, setTag] = useState('');
   const [maxConnections, setMaxConnections] = useState('');
   const [listenPort, setListenPort] = useState('');
+  const [outboundMode, setOutboundMode] = useState<'vpn' | 'tunnel'>('vpn');
   const [vpnSubscription, setVpnSubscription] = useState('');
+  const [natIp, setNatIp] = useState('');
+  const [tunnelInterface, setTunnelInterface] = useState('');
+  const [maskHost, setMaskHost] = useState('');
+  const [advancedOptions, setAdvancedOptions] = useState<AdvancedOptions>({ ...DEFAULT_ADVANCED });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -28,13 +35,14 @@ export default function AddProxyDialog({ open, onClose, nodeId, nodes, onCreated
 
     const targetNodeId = nodeId || parseInt(selectedNodeId, 10);
     if (!targetNodeId) {
-      setError('Выберите ноду');
+      setError('Выберите узел');
       return;
     }
 
     setLoading(true);
 
     try {
+      const { stunServers: stunStr, censorshipTlsDomain: censD, censorshipTlsFrontDir: censFD, ...restOpts } = advancedOptions;
       await createProxy(targetNodeId, {
         domain: domain || undefined,
         tag: tag || undefined,
@@ -42,7 +50,14 @@ export default function AddProxyDialog({ open, onClose, nodeId, nodes, onCreated
         note: note || undefined,
         maxConnections: maxConnections ? parseInt(maxConnections, 10) : undefined,
         listenPort: listenPort ? parseInt(listenPort, 10) : undefined,
-        vpnSubscription: vpnSubscription || undefined,
+        vpnSubscription: outboundMode === 'vpn' ? (vpnSubscription || undefined) : undefined,
+        natIp: outboundMode === 'tunnel' ? (natIp || undefined) : undefined,
+        tunnelInterface: outboundMode === 'tunnel' ? (tunnelInterface || undefined) : undefined,
+        maskHost: maskHost || undefined,
+        ...restOpts,
+        stunServers: stunStr.split(',').map((s) => s.trim()).filter(Boolean),
+        censorshipTlsDomain: censD || undefined,
+        censorshipTlsFrontDir: censFD || undefined,
       });
       setDomain('');
       setName('');
@@ -51,7 +66,12 @@ export default function AddProxyDialog({ open, onClose, nodeId, nodes, onCreated
       setMaxConnections('');
       setListenPort('');
       setVpnSubscription('');
+      setNatIp('');
+      setTunnelInterface('');
+      setMaskHost('');
       setSelectedNodeId(nodeId ? nodeId.toString() : '');
+      setAdvancedOptions({ ...DEFAULT_ADVANCED });
+      setActiveTab('basic');
       onCreated();
     } catch (err: any) {
       setError(err.message);
@@ -70,45 +90,99 @@ export default function AddProxyDialog({ open, onClose, nodeId, nodes, onCreated
               <Alert theme="danger" message={error} />
             </div>
           )}
-          {!nodeId && nodes && (
-            <div className="dialog-field">
-              <label>Нода *</label>
-              <Select
-                value={selectedNodeId ? [selectedNodeId] : []}
-                onUpdate={(val) => setSelectedNodeId(val[0] || '')}
-                placeholder="Выберите ноду"
-                width="max"
-                options={nodes.map((n) => ({ value: n.id.toString(), content: `${n.name} (${n.ip})` }))}
-              />
-            </div>
+          <Tabs
+            activeTab={activeTab}
+            onSelectTab={setActiveTab}
+            items={[
+              { id: 'basic', title: 'Основные' },
+              { id: 'telemt', title: 'Telemt' },
+            ]}
+            size="l"
+            className="dialog-tabs"
+          />
+
+          <div style={{ marginTop: 16 }}>
+            {activeTab === 'basic' && (
+            <>
+              {!nodeId && nodes && (
+                <div className="dialog-field">
+                  <label>Узел *</label>
+                  <Select
+                    value={selectedNodeId ? [selectedNodeId] : []}
+                    onUpdate={(val) => setSelectedNodeId(val[0] || '')}
+                    placeholder="Выберите узел"
+                    width="max"
+                    options={nodes.map((n) => ({ value: n.id.toString(), content: `${n.name} (${n.ip})` }))}
+                  />
+                </div>
+              )}
+              <div className="dialog-field">
+                <label>Название (опционально)</label>
+                <TextInput value={name} onUpdate={setName} placeholder="Имя прокси" size="l" />
+              </div>
+              <div className="dialog-field">
+                <label>Заметка (опционально)</label>
+                <TextInput value={note} onUpdate={setNote} placeholder="Описание" size="l" />
+              </div>
+              <div className="dialog-field">
+                <label>Fake TLS домен (опционально)</label>
+                <TextInput value={domain} onUpdate={setDomain} placeholder="напр. www.google.com" size="l" />
+              </div>
+              <div className="dialog-field">
+                <label>Промо тег (опционально)</label>
+                <TextInput value={tag} onUpdate={setTag} placeholder="Промо тег" size="l" />
+              </div>
+              <div className="dialog-field">
+                <label>Максимум подключений (0 = без лимита)</label>
+                <TextInput value={maxConnections} onUpdate={setMaxConnections} placeholder="0" size="l" type="number" />
+              </div>
+              <div className="dialog-field">
+                <label>Порт прослушивания (пусто = SNI на 443)</label>
+                <TextInput value={listenPort} onUpdate={setListenPort} placeholder="напр. 8443" size="l" type="number" />
+              </div>
+              <div className="dialog-field">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                  <label style={{ margin: 0 }}>Исходящий трафик</label>
+                  <HelpMark>VPN-подписка или туннель. VPN работает через VLESS/SOCKS5, а промо Telegram не гарантируется. Туннель идет через SSH/OpenVPN, промо работает при правильно настроенном NAT IP.</HelpMark>
+                </div>
+                <RadioButton
+                  value={outboundMode}
+                  onUpdate={(v) => setOutboundMode(v as 'vpn' | 'tunnel')}
+                  size="m"
+                  options={[
+                    { value: 'vpn', content: 'VPN-подписка' },
+                    { value: 'tunnel', content: 'Туннель (SSH/VPN)' },
+                  ]}
+                />
+              </div>
+              {outboundMode === 'vpn' && (
+                <div className="dialog-field">
+                  <label>VLESS URL или socks5:// (опционально)</label>
+                  <TextInput value={vpnSubscription} onUpdate={setVpnSubscription} placeholder="https://... или socks5://127.0.0.1:10808" size="l" />
+                </div>
+              )}
+              {outboundMode === 'tunnel' && (
+                <>
+                  <div className="dialog-field">
+                    <label>NAT IP — публичный IP туннельного сервера</label>
+                    <TextInput value={natIp} onUpdate={setNatIp} placeholder="напр. 150.241.105.36" size="l" />
+                  </div>
+                  <div className="dialog-field">
+                    <label>Интерфейс туннеля</label>
+                    <TextInput value={tunnelInterface} onUpdate={setTunnelInterface} placeholder="напр. tun0" size="l" />
+                  </div>
+                </>
+              )}
+              <div className="dialog-field">
+                <label>Self-steal — куда перенаправлять не-MTProto трафик (опционально)</label>
+                <TextInput value={maskHost} onUpdate={setMaskHost} placeholder="напр. 127.0.0.1:8080" size="l" />
+              </div>
+            </>
           )}
-          <div className="dialog-field">
-            <label>Название (необязательно)</label>
-            <TextInput value={name} onUpdate={setName} placeholder="Мой прокси" size="l" />
-          </div>
-          <div className="dialog-field">
-            <label>Заметка (необязательно)</label>
-            <TextInput value={note} onUpdate={setNote} placeholder="Описание" size="l" />
-          </div>
-          <div className="dialog-field">
-            <label>Fake TLS домен (необязательно, из пула)</label>
-            <TextInput value={domain} onUpdate={setDomain} placeholder="напр. www.google.com" size="l" />
-          </div>
-          <div className="dialog-field">
-            <label>Промо тег (необязательно)</label>
-            <TextInput value={tag} onUpdate={setTag} placeholder="Опционально" size="l" />
-          </div>
-          <div className="dialog-field">
-            <label>Лимит подключений (0 = без лимита)</label>
-            <TextInput value={maxConnections} onUpdate={setMaxConnections} placeholder="0" size="l" type="number" />
-          </div>
-          <div className="dialog-field">
-            <label>Собственный порт прослушивания (пусто = SNI на 443)</label>
-            <TextInput value={listenPort} onUpdate={setListenPort} placeholder="напр. 8443" size="l" type="number" />
-          </div>
-          <div className="dialog-field">
-            <label>VPN подписка — VLESS URL (необязательно)</label>
-            <TextInput value={vpnSubscription} onUpdate={setVpnSubscription} placeholder="https://..." size="l" />
+
+            {activeTab === 'telemt' && (
+              <TelemtFields opts={advancedOptions} set={setAdvancedOptions} />
+            )}
           </div>
         </form>
       </Dialog.Body>

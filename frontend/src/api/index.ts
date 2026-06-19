@@ -49,6 +49,14 @@ export async function getMe() {
   return request<{ user: { userId: number; username: string } }>('/auth/me');
 }
 
+export async function getPanelVersion(): Promise<{ version: string }> {
+  return request<{ version: string }>('/system/version');
+}
+
+export async function updatePanel(): Promise<{ success: boolean; message: string }> {
+  return request<{ success: boolean; message: string }>('/system/update', { method: 'POST' });
+}
+
 export function logout() {
   localStorage.removeItem('token');
   window.location.href = '/login';
@@ -122,8 +130,8 @@ export async function deleteNode(id: number) {
   return request<{ success: boolean }>(`/nodes/${id}`, { method: 'DELETE' });
 }
 
-export async function checkNodeHealth(id: number): Promise<{ online: boolean }> {
-  return request<{ online: boolean }>(`/nodes/${id}/health`);
+export async function checkNodeHealth(id: number): Promise<{ online: boolean; version?: string | null }> {
+  return request<{ online: boolean; version?: string | null }>(`/nodes/${id}/health`);
 }
 
 export async function checkNodeConnection(ip: string, port: number, token: string): Promise<{ online: boolean }> {
@@ -165,6 +173,43 @@ export interface ProxyData {
   listenPort?: number;
   vpnSubscription?: string;
   vpnContainerName?: string;
+  maskHost?: string;
+  natIp?: string;
+  tunnelInterface?: string;
+  useMiddleProxy?: boolean;
+  fastMode?: boolean;
+  me2dcFallback?: boolean;
+  me2dcFast?: boolean;
+  meKeepaliveEnabled?: boolean;
+  meKeepaliveIntervalSecs?: number;
+  meKeepaliveJitterSecs?: number;
+  meKeepalivePayloadRandom?: boolean;
+  meReconnectBackoffBaseMs?: number;
+  meReconnectBackoffCapMs?: number;
+  meReconnectFastRetryCount?: number;
+  desyncAllFull?: boolean;
+  meWriterPickMode?: string;
+  meWarmupStaggerEnabled?: boolean;
+  meWarmupStepDelayMs?: number;
+  meWarmupStepJitterMs?: number;
+  beobachten?: boolean;
+  beobachtenMinutes?: number;
+  beobachtenFlushSecs?: number;
+  beobachtenFile?: string;
+  upstreamConnectRetryAttempts?: number;
+  upstreamConnectRetryBackoffMs?: number;
+  tgConnect?: number;
+  rstOnClose?: string;
+  logLevel?: string;
+  unknownDcFileLogEnabled?: boolean;
+  updateEvery?: number;
+  networkPrefer?: string;
+  stunServers?: string[];
+  serverClientMss?: number;
+  censorshipTlsDomain?: string;
+  censorshipTlsEmulation?: boolean;
+  censorshipTlsFrontDir?: string;
+  meInitRetryAttempts?: number;
 }
 
 export interface ProxyStatsData {
@@ -191,6 +236,90 @@ export interface CreateProxyRequest {
   maxConnections?: number;
   listenPort?: number;
   vpnSubscription?: string;
+  maskHost?: string;
+  natIp?: string;
+  tunnelInterface?: string;
+  useMiddleProxy?: boolean;
+  fastMode?: boolean;
+  me2dcFallback?: boolean;
+  me2dcFast?: boolean;
+  meKeepaliveEnabled?: boolean;
+  meKeepaliveIntervalSecs?: number;
+  meKeepaliveJitterSecs?: number;
+  meKeepalivePayloadRandom?: boolean;
+  meReconnectBackoffBaseMs?: number;
+  meReconnectBackoffCapMs?: number;
+  meReconnectFastRetryCount?: number;
+  desyncAllFull?: boolean;
+  meWriterPickMode?: string;
+  meWarmupStaggerEnabled?: boolean;
+  meWarmupStepDelayMs?: number;
+  meWarmupStepJitterMs?: number;
+  beobachten?: boolean;
+  beobachtenMinutes?: number;
+  beobachtenFlushSecs?: number;
+  beobachtenFile?: string;
+  upstreamConnectRetryAttempts?: number;
+  upstreamConnectRetryBackoffMs?: number;
+  tgConnect?: number;
+  rstOnClose?: string;
+  logLevel?: string;
+  unknownDcFileLogEnabled?: boolean;
+  updateEvery?: number;
+  networkPrefer?: string;
+  stunServers?: string[];
+  serverClientMss?: number;
+  censorshipTlsDomain?: string;
+  censorshipTlsEmulation?: boolean;
+  censorshipTlsFrontDir?: string;
+  meInitRetryAttempts?: number;
+}
+
+export interface UpdateProxyRequest {
+  domain?: string;
+  tag?: string;
+  name?: string;
+  note?: string;
+  maxConnections?: number;
+  listenPort?: number;
+  vpnSubscription?: string;
+  maskHost?: string;
+  natIp?: string;
+  tunnelInterface?: string;
+  useMiddleProxy?: boolean;
+  fastMode?: boolean;
+  me2dcFallback?: boolean;
+  me2dcFast?: boolean;
+  meKeepaliveEnabled?: boolean;
+  meKeepaliveIntervalSecs?: number;
+  meKeepaliveJitterSecs?: number;
+  meKeepalivePayloadRandom?: boolean;
+  meReconnectBackoffBaseMs?: number;
+  meReconnectBackoffCapMs?: number;
+  meReconnectFastRetryCount?: number;
+  desyncAllFull?: boolean;
+  meWriterPickMode?: string;
+  meWarmupStaggerEnabled?: boolean;
+  meWarmupStepDelayMs?: number;
+  meWarmupStepJitterMs?: number;
+  beobachten?: boolean;
+  beobachtenMinutes?: number;
+  beobachtenFlushSecs?: number;
+  beobachtenFile?: string;
+  upstreamConnectRetryAttempts?: number;
+  upstreamConnectRetryBackoffMs?: number;
+  tgConnect?: number;
+  rstOnClose?: string;
+  logLevel?: string;
+  unknownDcFileLogEnabled?: boolean;
+  updateEvery?: number;
+  networkPrefer?: string;
+  stunServers?: string[];
+  serverClientMss?: number;
+  censorshipTlsDomain?: string;
+  censorshipTlsEmulation?: boolean;
+  censorshipTlsFrontDir?: string;
+  meInitRetryAttempts?: number;
 }
 
 export interface StatsSnapshotData {
@@ -225,7 +354,7 @@ export async function createProxy(nodeId: number, data: CreateProxyRequest) {
   });
 }
 
-export async function updateProxy(nodeId: number, proxyId: string, data: { domain?: string; tag?: string; name?: string; note?: string; maxConnections?: number; vpnSubscription?: string }) {
+export async function updateProxy(nodeId: number, proxyId: string, data: UpdateProxyRequest) {
   return request<ProxyData>(`/nodes/${nodeId}/proxies/${proxyId}`, {
     method: 'PUT',
     body: JSON.stringify(data),

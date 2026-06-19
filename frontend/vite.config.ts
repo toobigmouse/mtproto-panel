@@ -8,4 +8,17 @@ export default defineConfig({
       '/api': 'http://localhost:3000',
     },
   },
+  build: {
+    sourcemap: false,
+    minify: 'esbuild',
+    rollupOptions: {
+      maxParallelFileOps: 2,
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          gravityui: ['@gravity-ui/uikit'],
+        },
+      },
+    },
+  },
 });
